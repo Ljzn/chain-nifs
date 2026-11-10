@@ -1,0 +1,11 @@
+/_build/
+/deps/
+/priv/native/
+/.cargo-cache/
+/.rustup/
+/.hex-cache/
+/.mix/
+/native/**/target/
+/interop/node_modules/
+**/.npm-cache/
+/interop/*.local.json

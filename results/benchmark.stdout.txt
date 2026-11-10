@@ -1,0 +1,93 @@
+{
+  "runtime": {
+    "otp": "27",
+    "schedulers": 2,
+    "elixir": "1.20.5",
+    "dirty_cpu_schedulers": 2,
+    "architecture": "aarch64-apple-darwin25.3.0"
+  },
+  "crypto": {
+    "verify": {
+      "samples": 31,
+      "min_us": 144,
+      "median_us": 145,
+      "max_us": 193
+    },
+    "public_key": {
+      "samples": 31,
+      "min_us": 138,
+      "median_us": 139,
+      "max_us": 167
+    },
+    "sign_including_keygen_selfverify": {
+      "samples": 31,
+      "min_us": 488,
+      "median_us": 820,
+      "max_us": 1622
+    }
+  },
+  "payments": [
+    {
+      "build": {
+        "samples": 5,
+        "min_us": 716,
+        "median_us": 1060,
+        "max_us": 2618
+      },
+      "bytes": 5465,
+      "verify": {
+        "samples": 5,
+        "min_us": 184,
+        "median_us": 185,
+        "max_us": 192
+      },
+      "inputs": 1,
+      "outputs": 2,
+      "weight": 5876,
+      "vsize": 1469,
+      "fee": 10000
+    },
+    {
+      "build": {
+        "samples": 5,
+        "min_us": 1122,
+        "median_us": 1753,
+        "max_us": 3745
+      },
+      "bytes": 10832,
+      "verify": {
+        "samples": 5,
+        "min_us": 326,
+        "median_us": 332,
+        "max_us": 339
+      },
+      "inputs": 2,
+      "outputs": 2,
+      "weight": 11366,
+      "vsize": 2842,
+      "fee": 10000
+    },
+    {
+      "build": {
+        "samples": 5,
+        "min_us": 41135,
+        "median_us": 46177,
+        "max_us": 52173
+      },
+      "bytes": 343586,
+      "verify": {
+        "samples": 5,
+        "min_us": 8841,
+        "median_us": 9123,
+        "max_us": 9261
+      },
+      "inputs": 64,
+      "outputs": 2,
+      "weight": 351746,
+      "vsize": 87937,
+      "fee": 10000
+    }
+  ],
+  "beam_memory_at_end_bytes": 60992540,
+  "note": "warm release samples; sign includes seed keygen+selfverify; overall RSS is measured externally, not per-call delta"
+}

@@ -1,0 +1,61 @@
+{
+  "sourceRoot": "apps/light-treasury-wallet/packages/core/src",
+  "files": [
+    {
+      "path": "pq/mldsa.ts",
+      "sha256": "fad80a3eccc36bdf12cc4e11e719b13e9453cec5e4438a66f9f958245f45e86b"
+    },
+    {
+      "path": "pq/address.ts",
+      "sha256": "25e2dce98acc814fba48cfab2b24602f8a295138ddd2cca8dd5058e07cf27052"
+    },
+    {
+      "path": "pq/script.ts",
+      "sha256": "392605550c44757bec46c3206514eb3ebc3163ec0821914935da8acfeed70fb4"
+    },
+    {
+      "path": "pq/sighash.ts",
+      "sha256": "02bc399e330d1f63561afcaedb51b0e02dde8de2dfcaa65964b7a0c9e8068a9e"
+    },
+    {
+      "path": "pq/witness.ts",
+      "sha256": "89ac4396987dba13895d89e43a6aebd61fc0e54e83c93d7b275fba2902d6bb09"
+    },
+    {
+      "path": "pq/derivation.ts",
+      "sha256": "2791ba2652ca3e14d85cf3edd0d146969bb027dfcee7787a01fc12d878135b0e"
+    },
+    {
+      "path": "signer/transaction.ts",
+      "sha256": "1b0d208333cd94ab5d98c0bb43bc185c2d0ea2fd297f7400b2158a13dac2f1aa"
+    },
+    {
+      "path": "network.ts",
+      "sha256": "941a4a6493dd3fba1bdc2895b24d448a3d388501db5d9278dcf3c169a084b835"
+    },
+    {
+      "path": "signer/payment.ts",
+      "sha256": "3983815729f14aad80f6d810e045d4db67120031dd917d6d95aa2137510f3305"
+    },
+    {
+      "path": "signer/utils.ts",
+      "sha256": "ae3c1689f46a11bed2f5ec99aed2e3c3f76b395ea2e4b39d26b950a884b34f57"
+    },
+    {
+      "path": "types.ts",
+      "sha256": "428db6663a3764ba6bb9e4a35dbd799a580fd0481e11e79e932301a5913cbce4"
+    },
+    {
+      "path": "hd.ts",
+      "sha256": "461915082aaaafe165f9d73606b2b2259a94cf4d94bfb22c6004b4a7a9a11a35"
+    },
+    {
+      "path": "signer/psbt.ts",
+      "sha256": "a83b5c9a7442cbdf1ffd5f5ab039fe781223ce246e6461f68c01546e9e2c6452"
+    },
+    {
+      "path": "signer/script.ts",
+      "sha256": "8e791a811dfee9889cf8b10e71b9c7a7daac5161e2e73c77c9e529cb278a3d4d"
+    }
+  ]
+}
