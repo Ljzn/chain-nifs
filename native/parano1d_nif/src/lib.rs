@@ -1,6 +1,8 @@
+mod admission;
 mod decode;
 mod model;
 
+use admission::{Admission, Status};
 use model::Artifact;
 use noid_core::cpu::ensure_production_hardware;
 use noid_gkr::wallet_authorization::{
@@ -12,11 +14,10 @@ use noid_tx::OwnerAuthorizationVersion;
 use rayon::ThreadPoolBuilder;
 use rustler::{Binary, Env, Term};
 use std::panic::{catch_unwind, AssertUnwindSafe};
-use std::sync::Mutex;
 use zeroize::Zeroizing;
 
 // A single shared gate also covers direct calls bypassing the Elixir wrapper.
-static PROOF_GATE: Mutex<()> = Mutex::new(());
+static PROOF_GATE: Admission = Admission::new();
 
 fn boundary<T>(work: impl FnOnce() -> Result<T, String>) -> Result<T, String> {
     catch_unwind(AssertUnwindSafe(|| {
@@ -71,26 +72,27 @@ fn authorize_transaction<'a>(
 ) -> Result<Artifact<'a>, String> {
     boundary(|| {
         let version = version(requested_version)?;
-        let mut intent = model::decode(raw.as_slice(), true)?;
-        let key = secret(bytes.as_slice())?;
-        if upstream_address(&key) != intent.pages[0].body.input_owner {
-            return Err("secret does not match transaction owner".into());
-        }
-        let _gate = PROOF_GATE.try_lock().map_err(|_| "busy")?;
-        intent.authorization_bytes = proof_work(|| {
-            let bundle = prove_paged_spend_authorization_for_version(
-                &intent.pages,
-                OwnerAuthWitness::new(key),
-                version,
-            )
-            .map_err(|_| "authorization proof failed")?;
-            verify_paged_spend_authorization_for_version(&intent.pages, &bundle, version)
-                .map_err(|_| "generated authorization failed verification")?;
-            bundle
-                .to_bytes()
-                .map_err(|_| "authorization encoding failed".into())
-        })?;
-        model::artifact(env, &intent, requested_version)
+        PROOF_GATE.run(|| {
+            let mut intent = model::decode(raw.as_slice(), true)?;
+            let key = secret(bytes.as_slice())?;
+            if upstream_address(&key) != intent.pages[0].body.input_owner {
+                return Err("secret does not match transaction owner".into());
+            }
+            intent.authorization_bytes = proof_work(|| {
+                let bundle = prove_paged_spend_authorization_for_version(
+                    &intent.pages,
+                    OwnerAuthWitness::new(key),
+                    version,
+                )
+                .map_err(|_| "authorization proof failed")?;
+                verify_paged_spend_authorization_for_version(&intent.pages, &bundle, version)
+                    .map_err(|_| "generated authorization failed verification")?;
+                bundle
+                    .to_bytes()
+                    .map_err(|_| "authorization encoding failed".into())
+            })?;
+            model::artifact(env, &intent, requested_version)
+        })
     })
 }
 
@@ -102,22 +104,57 @@ fn verify_transaction<'a>(
 ) -> Result<Artifact<'a>, String> {
     boundary(|| {
         let version = version(requested_version)?;
-        let intent = model::decode(raw.as_slice(), false)?;
-        let _gate = PROOF_GATE.try_lock().map_err(|_| "busy")?;
-        let bundle = WalletAuthorizationBundle::from_bytes(&intent.authorization_bytes)
-            .map_err(|_| "invalid authorization encoding")?;
-        proof_work(|| {
-            verify_paged_spend_authorization_for_version(&intent.pages, &bundle, version)
-                .map_err(|_| "invalid authorization proof".into())
-        })?;
-        model::artifact(env, &intent, requested_version)
+        PROOF_GATE.run(|| {
+            let intent = model::decode(raw.as_slice(), false)?;
+            let bundle = WalletAuthorizationBundle::from_bytes(&intent.authorization_bytes)
+                .map_err(|_| "invalid authorization encoding")?;
+            proof_work(|| {
+                verify_paged_spend_authorization_for_version(&intent.pages, &bundle, version)
+                    .map_err(|_| "invalid authorization proof".into())
+            })?;
+            model::artifact(env, &intent, requested_version)
+        })
     })
 }
 
 // A diagnostic only: querying this does not reserve the proof slot.
 #[rustler::nif]
 fn proof_busy() -> bool {
-    PROOF_GATE.try_lock().is_err()
+    PROOF_GATE.status() == Status::Busy
+}
+
+#[rustler::nif]
+fn proof_status() -> &'static str {
+    match PROOF_GATE.status() {
+        Status::Idle => "idle",
+        Status::Busy => "busy",
+        Status::Faulted => "faulted",
+    }
+}
+
+#[rustler::nif]
+fn limits() -> model::Limits {
+    model::limits()
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    #[test]
+    fn worker_unwind_is_caught_and_gate_is_faulted_before_return() {
+        let gate = Admission::new();
+        let result: Result<(), String> =
+            boundary(|| gate.run(|| proof_work(|| panic!("test-only worker unwind"))));
+        assert_eq!(
+            result,
+            Err("native panic; restart the BEAM before retrying".into())
+        );
+        assert_eq!(gate.status(), Status::Faulted);
+        assert_eq!(gate.run(|| Ok(())), Err(admission::FAULTED.into()));
+        // A fresh isolated instance can operate after the old workers have joined.
+        assert_eq!(Admission::new().run(|| proof_work(|| Ok(42))), Ok(42));
+    }
 }
 
 rustler::init!("Elixir.Parano1dNif.Native");

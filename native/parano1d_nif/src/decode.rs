@@ -1,4 +1,4 @@
-use crate::model::{Input, Output, Request, MAX_INPUTS, MAX_OUTPUTS};
+use crate::model::{Input, Output, Request, MAX_ADDRESS_BYTES, MAX_INPUTS, MAX_OUTPUTS};
 use rustler::{Atom, Binary, Term};
 
 rustler::atoms! { owner, epoch_anchor, fee, inputs, outputs, slot_index, amount, creation_id }
@@ -10,7 +10,7 @@ fn field<'a>(term: Term<'a>, key: Atom) -> Result<Term<'a>, String> {
 
 fn address(term: Term<'_>) -> Result<String, String> {
     let bytes: Binary<'_> = term.decode().map_err(|_| "address must be binary")?;
-    if bytes.len() > 100 {
+    if !(3..=MAX_ADDRESS_BYTES).contains(&bytes.len()) {
         return Err("address exceeds size limit".into());
     }
     std::str::from_utf8(bytes.as_slice())

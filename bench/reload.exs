@@ -1,5 +1,8 @@
 # Run only in a disposable BEAM: this deliberately unloads the native module.
-Code.require_file("../test/support/fixtures.ex", __DIR__)
+unless Code.ensure_loaded?(Parano1dNif.Fixtures) do
+  Code.require_file("../test/support/fixtures.ex", __DIR__)
+end
+
 alias Parano1dNif, as: API
 alias Parano1dNif.Fixtures, as: F
 

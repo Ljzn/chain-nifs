@@ -28,7 +28,8 @@ bin/run mix deps.get
 # 两个普通 scheduler 足以测试证明期间的 BEAM 响应
 ERL_FLAGS="+S 2:2" bin/run mix precommit
 bin/run cargo fmt --manifest-path native/parano1d_nif/Cargo.toml --check
-bin/run cargo clippy --manifest-path native/parano1d_nif/Cargo.toml --no-deps -- -D warnings
+bin/run cargo clippy --manifest-path native/parano1d_nif/Cargo.toml --locked --all-targets --no-deps -- -D warnings
+bin/run cargo test --manifest-path native/parano1d_nif/Cargo.toml --locked --lib
 ```
 
 `bin/run` 会进入项目目录，设置本地工具链 / Cargo / Hex 缓存，并拒绝不是指定提交或存在 tracked 修改的上游源码。首次 Rust release 编译需要时间；后续运行复用构建产物。
@@ -70,7 +71,7 @@ true = verified.txid == unsigned.txid
 
 ## 验证和测量
 
-真实 NIF 回归已覆盖 1 / 2 / 9 个输入（包括两页）生成和完整验证、收款人/输入/金额/费用/anchor/owner 被修改时拒绝旧证明、证明破损/截断/尾部数据、随机化证明保持 txid、精确 little-endian wire 布局、直接 Native 大输入限制、并发拒绝及普通 scheduler 的消息响应。
+真实 NIF 回归覆盖 1 / 2 / 9 / 64 个输入（最多八页、两输出）生成和完整验证、收款人/输入/金额/费用/anchor/owner 被修改时拒绝旧证明、证明破损/截断/尾部数据、随机化证明保持 txid、精确 little-endian wire 布局、直接 Native 大输入限制、并发拒绝及普通 scheduler 的消息响应。
 
 在本目录复现资源测量和卸载测试：
 
@@ -99,16 +100,24 @@ Apple M2 / 8 GiB RAM / macOS Darwin 25.6.0 / Elixir 1.20.5 / OTP 27，release NI
 
 每种形状两次样本；第二次不保证比首次快。随机证明长度也可能变化，表中是首次调用结果。整体进程 peak RSS 为 86,818,816 bytes（82.80 MiB），macOS 另报 peak memory footprint 为 106,218,072 bytes（101.30 MiB），包含 BEAM / NIF / 运行时，不是单独 prover 的增量内存。
 
-最终验证：13 项 ExUnit 测试全部通过；`mix precommit`、`mix compile --warnings-as-errors`、Cargo fmt 和 Clippy `-D warnings` 通过；独立 BEAM 内三轮 prove → unload → reload → verify 全部通过。证明运行期间完成 100 次普通进程消息握手；重叠证明请求返回 busy，测得该请求 224 μs 返回，后续两次验证均通过，门闩正常释放。
+初版基准提交（3b281c2）验证：13 项 ExUnit 测试全部通过；`mix precommit`、`mix compile --warnings-as-errors`、Cargo fmt 和 Clippy `-D warnings` 通过；独立 BEAM 内三轮 prove → unload → reload → verify 全部通过。证明运行期间完成 100 次普通进程消息握手；重叠证明请求返回 busy，测得该请求 224 μs 返回，后续两次验证均通过，门闩正常释放。
 
-原始数据保留在 `results/benchmark.json`、`results/time.txt`、`results/host.txt` 和 `results/reload.txt`。只使用合成秘密与槽位，不代表链上交易可被接纳；尚未做真实节点联调、长期并发压测、Linux/x86 构建验证或 64 输入完整证明基准（64 输入仅验证构造）。
+原始数据保留在 `results/benchmark.json`、`results/time.txt`、`results/host.txt` 和 `results/reload.txt`。只使用合成秘密与槽位，不代表链上交易可被接纳；尚未做真实节点联调、长期并发压测、Linux/x86 构建验证（新增 CI 后以远程 run 为准）。64 输入现已纳入自动完整证明回归，但尚无对应性能基准。
+
+## Review 修复验证
+
+本次本机回归：18 项 ExUnit 和 4 项 Rust 单元测试通过，包含 64 输入/两输出完整证明、248 个畸形容器用例、busy 优先于解码、普通 Err 释放锁、持锁/真实 scoped worker panic 后明确 faulted 且不重试。Clippy all-targets、编译/测试 warnings-as-errors 通过；正常路径的独立 BEAM 三轮 unload/reload 验证通过。panic 注入只在 Rust 单元测试的独立 gate 实例中执行，不提供生产 NIF 注入入口。
+
+GitHub Actions 已配置 Linux x86-64 的真实 NIF 验证及锁文件审计。详细步骤和证据边界见 [CI.md](CI.md)，远程结果以对应 commit 的 run 为准。
 
 ## 调度、资源与秘密
 
-地址、构造、证明、验证均标记 `DirtyCpu`。证明和验证共用一个 native `try_lock` 门闩，繁忙返回 `{:error, "busy"}`，不在 native 中无限排队；官方并行计算在独立、固定两个线程的 scoped Rayon pool 内执行。每次证明或验证结束前都会关闭线程池并 join 所有工作线程，避免模块卸载时遗留 native 线程。`proof_busy?/0` 是瞬时诊断，不能用于替代原子预留。
+地址、构造、证明、验证均标记 `DirtyCpu`。证明和验证共用一个 native `try_lock` 门闩，繁忙返回 `{:error, "busy"}`，不在 native 中无限排队；官方并行计算在独立、固定两个线程的 scoped Rayon pool 内执行。每次证明或验证结束前都会关闭线程池并 join 所有工作线程，避免模块卸载时遗留 native 线程。授权/验证在交易容器解码前获取准入锁，页数在官方解码前限为 1..8。版本、二进制类型/长度等廉价检查仍可先于准入；因此繁忙时 wrapper 合法但内容畸形的请求返回 busy，空闲时返回解析错误。
 
-调用方仍需有界队列和持久化任务策略。BEAM 调用方超时或死亡不会可靠中断正在运行的 dirty NIF；本原型没有强制取消或异步证明任务接口。
+`proof_status/0` 返回字符串 `"idle"`、`"busy"` 或 `"faulted"`，只反映当前准入锁快照，不是预留或完整健康检查。`proof_busy?/0` 仅在 busy 时为 true，faulted 为 false，调用方不能用 false 判断可服务。`limits/0` 提供 wrapper 限制，与 Native 限制的回归比较防止两侧漂移；地址长度统一为 3..100 字节，仍须满足 canonical Bech32m。
+
+调用方需有界队列和持久化任务策略。busy 是暂时冲突，可按有界退避策略重试；输入/证明校验错误不能盲目重试；faulted 为终止故障，应告警并重启宿主 BEAM，不能继续排队尝试。BEAM 调用方超时或死亡不会可靠中断正在运行的 dirty NIF，超时后不得立即并行重试同一任务，应等待原任务结果并核对 txid/持久化状态；本原型没有强制取消或异步证明任务接口，具体队列容量和业务重试策略由集成层决定。
 
 Rust 的秘密工作缓冲使用 `Zeroizing`，官方 `SpendSecret` / witness 在释放时零化。Elixir 原始 binary 及其他副本不会因此被清除。不会把秘密写入日志或文件；测试中所有秘密都是公开的合成数据。
 
-NIF 边界捕获 Rust unwind 并返回稳定错误；无法隔离 native 内存错误、abort 或 OOM。证明期间 panic 可能毒化门闩，此时需要重启宿主 BEAM 后恢复，不能只重启 Elixir Task。官方 panic hook 仍可能向 stderr 输出诊断，因此生产还需要日志审查与额外稳定性验证。
+NIF 边界捕获 Rust unwind 并返回稳定错误；无法隔离 native 内存错误、abort 或 OOM。持有准入锁期间 panic 会毒化门闩：首次返回 `native panic; restart the BEAM before retrying`，后续授权/验证返回 `faulted; restart the BEAM before retrying`。不会自动清 poison、不会自动重试，也没有暴露生产 panic 注入接口。必须重启宿主 BEAM，不能只重启 Elixir Task，也不将模块 reload 作为故障恢复契约；锁未持有时的 panic 不保证反映在准入状态，任何 native panic 都要求重启。官方 panic hook 仍可能向 stderr 输出诊断，因此生产还需要日志审查与额外稳定性验证。

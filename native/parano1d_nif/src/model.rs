@@ -8,7 +8,32 @@ use rustler::{Binary, Env, NifMap, OwnedBinary};
 pub const MAX_INPUTS: usize = 64;
 pub const MAX_OUTPUTS: usize = 2;
 pub const MAX_PAGES: usize = MAX_INPUTS / TX_INPUTS;
-pub const MAX_UNSIGNED_BYTES: usize = 7 + MAX_PAGES * 323;
+pub const MAX_ADDRESS_BYTES: usize = 100;
+pub const PAGE_BYTES: usize = 323;
+pub const MAX_UNSIGNED_BYTES: usize = 7 + MAX_PAGES * PAGE_BYTES;
+
+#[derive(NifMap)]
+pub struct Limits {
+    pub max_inputs: usize,
+    pub max_outputs: usize,
+    pub max_pages: usize,
+    pub page_bytes: usize,
+    pub max_address_bytes: usize,
+    pub max_unsigned_bytes: usize,
+    pub max_raw_bytes: usize,
+}
+
+pub fn limits() -> Limits {
+    Limits {
+        max_inputs: MAX_INPUTS,
+        max_outputs: MAX_OUTPUTS,
+        max_pages: MAX_PAGES,
+        page_bytes: PAGE_BYTES,
+        max_address_bytes: MAX_ADDRESS_BYTES,
+        max_unsigned_bytes: MAX_UNSIGNED_BYTES,
+        max_raw_bytes: MAX_RAW_BYTES,
+    }
+}
 pub const MAX_RAW_BYTES: usize = MAX_UNSIGNED_BYTES + 256 * 1024;
 
 #[derive(NifMap, Clone)]
@@ -48,7 +73,7 @@ pub struct Artifact<'a> {
 }
 
 pub fn parse_address(value: &str) -> Result<Address, String> {
-    if value.len() > 100 {
+    if value.len() > MAX_ADDRESS_BYTES {
         return Err("invalid address".into());
     }
     let address = Address::parse(value).map_err(|_| "invalid address")?;
@@ -160,6 +185,14 @@ pub fn decode(raw: &[u8], unsigned: bool) -> Result<PagedSpendIntent, String> {
     };
     if raw.len() > limit {
         return Err("transaction exceeds prototype size limit".into());
+    }
+    // Reject page counts before upstream allocates or parses any pages.
+    if raw.len() < 3 || raw[0] != 0xA3 {
+        return Err("invalid transaction encoding".into());
+    }
+    let pages = u16::from_le_bytes([raw[1], raw[2]]) as usize;
+    if !(1..=MAX_PAGES).contains(&pages) {
+        return Err("payment exceeds prototype page limit".into());
     }
     let intent = PagedSpendIntent::from_bytes(raw).map_err(|_| "invalid transaction encoding")?;
     check_payment(&intent)?;

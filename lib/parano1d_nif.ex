@@ -13,8 +13,13 @@ defmodule Parano1dNif do
   """
   alias Parano1dNif.Native
 
-  @max_raw_bytes 264_735
-  @max_unsigned_bytes 2_591
+  @max_inputs 64
+  @max_outputs 2
+  @max_pages div(@max_inputs, 8)
+  @page_bytes 323
+  @max_address_bytes 100
+  @max_unsigned_bytes 7 + @max_pages * @page_bytes
+  @max_raw_bytes @max_unsigned_bytes + 256 * 1024
   @max_u32 0xFFFFFFFF
   @max_u64 0xFFFFFFFFFFFFFFFF
 
@@ -23,7 +28,23 @@ defmodule Parano1dNif do
   @doc "Maximum transaction binary accepted before entering native code."
   def max_raw_bytes, do: @max_raw_bytes
 
-  @doc "Whether native proof or verification work currently holds the admission gate."
+  @doc "Admission snapshot: idle, busy, or terminal faulted. Not a reservation or full health check."
+  def proof_status, do: Native.proof_status()
+
+  @doc "Wrapper limits, checked against Native.limits/0 by regression tests."
+  def limits do
+    %{
+      max_inputs: @max_inputs,
+      max_outputs: @max_outputs,
+      max_pages: @max_pages,
+      page_bytes: @page_bytes,
+      max_address_bytes: @max_address_bytes,
+      max_unsigned_bytes: @max_unsigned_bytes,
+      max_raw_bytes: @max_raw_bytes
+    }
+  end
+
+  @doc "True only while admitted work holds the gate. Faulted returns false; inspect proof_status/0."
   def proof_busy?, do: Native.proof_busy()
 
   @spec derive_address(binary()) :: result()
@@ -75,10 +96,10 @@ defmodule Parano1dNif do
   defp unsigned_raw(_), do: {:error, "unsigned transaction exceeds 2591 bytes"}
 
   defp address(value)
-       when is_binary(value) and byte_size(value) >= 3 and byte_size(value) <= 128,
+       when is_binary(value) and byte_size(value) >= 3 and byte_size(value) <= @max_address_bytes,
        do: :ok
 
-  defp address(_), do: {:error, "address must be a binary of 3..128 bytes"}
+  defp address(_), do: {:error, "address must be a binary of 3..100 bytes"}
   defp uint(value, max) when is_integer(value) and value >= 0 and value <= max, do: :ok
   defp uint(_, _), do: {:error, "integer outside unsigned field range"}
 
@@ -86,8 +107,8 @@ defmodule Parano1dNif do
     with :ok <- address(owner),
          :ok <- anchor(anchor),
          :ok <- uint(fee, @max_u64),
-         :ok <- entries(inputs, 64, &input/1),
-         :ok <- entries(outputs, 2, &output/1),
+         :ok <- entries(inputs, @max_inputs, &input/1),
+         :ok <- entries(outputs, @max_outputs, &output/1),
          do: :ok
   end
 

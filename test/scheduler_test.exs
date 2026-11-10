@@ -20,6 +20,12 @@ defmodule Parano1dNif.SchedulerTest do
     deadline = System.monotonic_time(:millisecond) + 30_000
     await_native_work(proof, deadline)
     assert Task.yield(proof, 0) == nil
+    assert API.proof_status() == "busy"
+    # A malformed but wrapper-sized payload would be rejected by decode if reached.
+    # Busy must win for both entrypoints, including calls bypassing the wrapper.
+    assert {:error, "busy"} = API.verify_transaction(<<0xA3, 128, 0>>)
+    assert {:error, "busy"} = Parano1dNif.Native.verify_transaction(<<0xA3, 128, 0>>, 4)
+    assert {:error, "busy"} = API.authorize_transaction(<<0xA3, 128, 0>>, F.secret())
     assert {:error, "busy"} = API.authorize_transaction(unsigned.raw_transaction, F.secret())
 
     parent = self()
@@ -35,6 +41,11 @@ defmodule Parano1dNif.SchedulerTest do
     assert API.proof_busy?()
     assert {:ok, signed} = Task.await(proof, 600_000)
     refute API.proof_busy?()
+    assert API.proof_status() == "idle"
+
+    assert {:error, "payment exceeds prototype page limit"} =
+             API.verify_transaction(<<0xA3, 128, 0>>)
+
     assert {:ok, _} = API.verify_transaction(signed.raw_transaction)
   end
 
