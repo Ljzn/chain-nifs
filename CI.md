@@ -1,6 +1,6 @@
 # Validation and CI scope
 
-本机环境：Apple M2 arm64 / 8GiB，OTP27、Elixir1.20.5、Rust1.96.0，release NIF。远程工作流目标为Ubuntu24.04 x86-64、OTP27.3.4.19、Elixir1.20.5、Node22；本轮用户已授权创建GitHub私有仓库。远程运行结果将在完成后追加，当前不宣称Linux已通过。
+本机环境：Apple M2 arm64 / 8GiB，OTP27、Elixir1.20.5、Rust1.96.0，release NIF。远程工作流目标为Ubuntu24.04 x86-64、OTP27.3.4.19、Elixir1.20.5、Node22；已按授权发布GitHub私有仓库https://github.com/Ljzn/tensorcash-nif，默认develop。修复commit14b77dd8b4b24f521dd6512af05528b40398a8ae的[Linux运行42822439599](https://github.com/Ljzn/tensorcash-nif/actions/runs/42822439599)已success（8m9s），所有测试、互操作、审计及artifact上传步骤通过。linux-validation artifact可供复查，保留30天。后续文档提交不改变已验证实现。
 
 ## Review后验证
 

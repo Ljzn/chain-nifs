@@ -1,5 +1,7 @@
 # TensorCash NIF prototype
 
+GitHub私有仓库：[Ljzn/tensorcash-nif](https://github.com/Ljzn/tensorcash-nif)，默认分支develop。
+
 独立 Elixir/Rustler 项目，封装 TensorCash 普通 TSC 的 ML-DSA-65 后量子授权。所有秘密/prevout 都是公开合成测试数据；没有修改 Venezia 业务代码、接入生产节点或广播交易。
 
 ## 实现范围
@@ -87,7 +89,7 @@ bench/run.exs先创建目录，默认只写ignored的results/generated/benchmark
 
     npm --prefix interop run --silent crossverify < results/native-sample.json
 
-crossverify使用官方钱包解析器/两套摘要路径/MLDSA验签，验收NIF产生的随机签名及完整交易，而非同一NIF自验。正常reload测试不是native崩溃恢复承诺。性能结果保留在results，实际本机结果见下文；[CI说明](CI.md)明确区分本机验证与尚未执行的远程Linux配置。
+crossverify使用官方钱包解析器/两套摘要路径/MLDSA验签，验收NIF产生的随机签名及完整交易，而非同一NIF自验。正常reload测试不是native崩溃恢复承诺。性能结果保留在results，实际本机结果见下文；[CI说明](CI.md)记录本机验证与已通过的远程Linux运行。
 
 ## 本机实测
 
@@ -104,11 +106,11 @@ Apple M2 / 8GiB，release NIF，BEAM普通/dirty CPU scheduler各2。原语31样
 
 64inputs完整独立验证中位9.123ms。整个基准BEAM峰值RSS107,167,744bytes（102.20MiB）；macOS另报footprint94,519,920bytes（90.14MiB），包含BEAM/fixtures/JSON/64input交易分配，不是每次签名增量。签名拒绝采样导致耗时变化，31次实测0.488–1.622ms。本次没有持续内存增长/生产并发压测。
 
-8份fresh NIF签名及1笔fresh2in2out完整交易已由独立官方钱包代码验证通过。Rust9项、ExUnit20项（含并发）、mix precommit及warnings-as-errors编译均已通过；完整交接记录于[HANDOFF](HANDOFF.md)。没有节点接纳验证；benchmark的固定10,000sat fee是合成差额，尤其64input时不代表满足网络最低费率。
+8份fresh NIF签名及1笔fresh2in2out完整交易已由独立官方钱包代码验证通过。Bob review修复后Rust11项、ExUnit33项（含并发、identity派生与1×16/64×16最大形状）、mix precommit及warnings-as-errors编译均已通过；完整交接记录于[HANDOFF](HANDOFF.md)。没有节点接纳验证；benchmark的固定10,000sat fee是合成差额，尤其64input时不代表满足网络最低费率。
 
 历史快照（保持tracked，不由新benchmark重写）：[benchmark](results/benchmark.json)、[RSS/时间](results/time.txt)、[官方交叉验签](results/crossverify.json)、[reload](results/reload.txt)。
 
-远程Linux CI尚未验证通过。后续CI应保存可复查的npm audit / cargo audit JSON和benchmark / crossverify输出artifact，并记录工具版本、执行状态及退出码；这是待取得的远程审计证据，不能把历史本机结论当作当前远程通过。
+修复commit14b77dd的[Linux x86-64 CI](https://github.com/Ljzn/tensorcash-nif/actions/runs/42822439599)已全部通过，包含Rust/真实NIF测试、官方oracle及最大形状交叉验证、reload和Cargo/Hex/npm审计。运行保留linux-validation artifact30天，含审计报告、fresh样本及交叉验证结果。历史M2性能快照不是Linux性能数据。
 
 ## Native边界与秘密
 

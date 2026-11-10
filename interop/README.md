@@ -45,7 +45,7 @@ type Fixture = {
   derivation: {
     mnemonic: string; passphrase: string; bip39SeedHex: Hex; rootHex: Hex;
     genesisHex: Hex; genesisByteOrder: string; account: 0; policyIdHex: Hex;
-    branch: 0; index: 7; spendInfoHex: Hex; spendingSeedHex: Hex;
+    branch: 0; index: 7; spendInfoHex: Hex; spendingSeedHex: Hex; identitySeedHex: Hex;
     publicKeyHex: Hex; secretKeyHex: Hex;
   };
   addresses: {

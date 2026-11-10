@@ -1,12 +1,12 @@
 # TensorCash NIF prototype handoff — 2026-11-10
 
-本地独立repo：/Users/linjiezhang/Documents/venezia/_local/worktrees/Alice/_local/tensorcash_nif，branchdevelop。用户授权在Alice的_local新建项目实现；没有创建远程repo、没有修改Venezia业务/Parano1d工程、没有访问真实钱包秘密或广播交易。
+本地独立repo：/Users/linjiezhang/Documents/venezia/_local/worktrees/Alice/_local/tensorcash_nif，branchdevelop。用户已授权实现、Bob review修复及GitHub私有发布。远程https://github.com/Ljzn/tensorcash-nif，private=true，默认develop；修复commit14b77dd8b4b24f521dd6512af05528b40398a8ae。没有修改Venezia业务/Parano1d工程、没有访问真实钱包秘密或广播交易。
 
 ## Bob review处理（后续用户已授权修复及私有发布）
 
 Wrapper整表length已改为有界遍历，百万列表reductions回归先red后green。新增DirectNative回归发现branch256截断，已改为u32+checked窄化；对256/257/65536/u32max拒绝。新增官方identity向量、1×16/64×16、MAX_MONEY/零金额/零fee/coinbase/rawcap/sequence及DirectNative边界；本机33ExUnit、11Rust通过。
 
-有限解析器corpus覆盖512单bitmutation+512truncations；官方TS交叉验证现在接受全部u32sequence，并新增最大形状支付独立验收脚本。CI新增完整npm audit、Cargo/Hex报告与always artifact；远程状态见CI.md。
+有限解析器corpus覆盖512单bitmutation+512truncations；官方TS交叉验证现在接受全部u32sequence，并新增最大形状支付独立验收脚本。CI新增完整npm audit、Cargo/Hex报告与always artifact；[Linux CI42822439599](https://github.com/Ljzn/tensorcash-nif/actions/runs/42822439599)对修复commit14b77dd全部通过（8m9s），审计与linux-validation artifact上传也通过；细节见CI.md。
 
 LICENSE恢复标准Apache附录模板，NOTICE保留上游与本项目贡献者归属；benchmark默认写ignored results/generated，历史样本不覆盖。金额严格正数是原型限制，zero fee允许但不代表relay；MAX_MONEY来自固定Core且不是发行量声明，network/sequence/false:error语义已补文档。Jason为Rustler非可选依赖，不能简单限制为test/dev，已保留并说明。
 
