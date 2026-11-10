@@ -1,0 +1,14 @@
+Benchmark host observed 2026-11-10 (Asia/Shanghai)
+CPU: Apple M2
+Physical RAM: 8589934592 bytes (8 GiB)
+OS: Darwin 25.6.0 arm64
+Elixir: 1.20.5
+Erlang/OTP: 27 (erts 15.2.7.8)
+Rust: 1.96.0 (ac68faa20 2026-05-25), aarch64-apple-darwin
+Native build: release, thin LTO, codegen-units=1, panic=unwind
+Normal BEAM schedulers: 2
+Rayon workers: 2 per scoped invocation, joined before returning
+Native proof/verify concurrency: 1
+Upstream: f47f386c842ab60d65b70351b0a5b2729f1d9179
+Measurement: 1 first + 1 warm authorize and verify per shape (1,2,9 inputs), followed by overlap rejection and sequential verification. This is a smoke benchmark, not a load test or percentile estimate. Authorize includes full self-verification. The first shape is process cold for proof caches, after address derivation and transaction construction.
+Peak RSS measured by macOS /usr/bin/time -l around mix run --no-compile; includes the BEAM, NIF and runtime, excludes compilation. Own-process ps sampling returned no data in this environment, so per-call RSS values are null. External peak RSS remains available and includes native allocations.

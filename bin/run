@@ -1,0 +1,19 @@
+#!/bin/sh
+set -eu
+project_dir=$(CDPATH= cd -- "$(dirname -- "$0")/.." && pwd)
+cd "$project_dir"
+export RUSTUP_HOME="$project_dir/.rustup"
+export CARGO_HOME="$project_dir/.cargo-cache"
+export MIX_HOME="${MIX_HOME:-$HOME/.mix}"
+export HEX_HOME="$project_dir/.hex-cache"
+expected=f47f386c842ab60d65b70351b0a5b2729f1d9179
+actual=$(git -C vendor/parano1d rev-parse HEAD)
+if [ "$actual" != "$expected" ]; then
+  printf "Unexpected upstream revision: %s (expected %s)\n" "$actual" "$expected" >&2
+  exit 1
+fi
+if ! git -C vendor/parano1d diff --quiet HEAD --; then
+  printf "Upstream tracked sources have local modifications\n" >&2
+  exit 1
+fi
+exec "$@"

@@ -1,0 +1,3 @@
+[submodule "vendor/parano1d"]
+	path = vendor/parano1d
+	url = https://git.parano1d.org/ignotusnemo/parano1d.git
