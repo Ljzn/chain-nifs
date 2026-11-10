@@ -96,11 +96,23 @@ type PaymentInput = {
 };
 ~~~
 
-Each payment uses one public key for all inputs. Input txids are display order; amount is the known spent-output amount in decimal sats. The official parser must round-trip the raw transaction byte-for-byte. The verifier requires version 2, locktime 0, witness-only flags 00/01, sequence fffffffd, empty scriptSigs, witness-v2 outputs, and no output extensions. It reconstructs the official 1-of-1 policy and prevout script from publicKeyHex, compares every input txid/vout/sequence, and requires each witness to be exactly [signature3309 || 01, official leaf, official control block]. It attaches all supplied spent amounts, recomputes each getPqSighash, checks the second official sighash implementation agrees, and verifies each actual witness signature. Input/output sums must yield a nonnegative fee.
+Each payment uses one public key for all inputs. Input txids are display order; amount is the known spent-output amount in decimal sats. The official parser must round-trip the raw transaction byte-for-byte. The verifier requires version 2, locktime 0, witness-only flags 00/01, an integer u32 sequence (0..0xffffffff) matching each supplied input, empty scriptSigs, witness-v2 outputs, and no output extensions. It reconstructs the official 1-of-1 policy and prevout script from publicKeyHex, compares every input txid/vout/sequence, and requires each witness to be exactly [signature3309 || 01, official leaf, official control block]. It attaches all supplied spent amounts, recomputes each getPqSighash, checks the second official sighash implementation agrees, and verifies each actual witness signature. Input/output sums must yield a nonnegative fee; fee zero is accepted locally and does not establish relay acceptance. The fixture uses fffffffd as an example, while crossverify and the NIF accept any integer u32 sequence. Neither establishes BIP68 relative-lock maturity or RBF policy compliance.
 
 When payments is present, output adds paymentResults in payment order. Success entries are {index,verified:true,txid,wtxid,sighashesHex,weight,vsize,feeSats}; failure entries are {index,verified:false,error}. Any failure causes a nonzero exit. When payments is absent the existing output shape remains {schemaVersion:1,results:[...]}. Transaction ids use display order. This validates the full serialized payment against supplied prevout facts; it does not fetch or establish chain UTXO existence.
 
-Validated pipeline:
+From the project root, benchmark output and historical replay use:
+
+    ERL_FLAGS="+S 2:2" bin/run mix run bench/run.exs
+    npm --prefix interop run --silent crossverify < results/generated/native-sample.json
+    npm --prefix interop run --silent crossverify < results/native-sample.json
+
+The benchmark creates results/generated/ before writing benchmark.json and native-sample.json there; that directory is ignored. Tracked results snapshots remain historical evidence and are not overwritten. Set TENSORCASH_NATIVE_LOCAL_COMPAT=1 on the benchmark command to also write the ignored interop/native.local.json compatibility copy. The last command replays the tracked historical sample without regenerating it.
+
+The NIF prototype requires strictly positive input/output amounts, bounded individually and in each sum by MAX_MONEY=2_100_000_000_000_000. This positive-only restriction is narrower than MoneyRange in the pinned Core src/consensus/amount.h, which allows zero; the bound matches that header and is not a total-issuance claim. Crossverify is an independent wallet-format/signature oracle, not a replacement for every NIF limit. Raw transactions are network agnostic for the same witness programs: HRPs are address encodings and cannot be established from raw output scripts. Verification does not establish chain UTXO existence, maturity, or node relay policy.
+
+Remote Linux CI has not yet been verified passing. Future CI evidence should retain npm audit and cargo audit JSON, benchmark and crossverify artifacts, tool versions, execution status and exit codes. Historical local results do not establish a current remote audit verdict.
+
+Validated local signature pipeline:
 
     set -o pipefail
     npm run --silent crossverify -- --emit | npm run --silent crossverify

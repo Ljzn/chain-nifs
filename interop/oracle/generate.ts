@@ -7,7 +7,7 @@ import { ml_dsa65 } from '@noble/post-quantum/ml-dsa.js';
 import { hex } from '@scure/base';
 import { mldsa65Keygen, mldsa65Sign, mldsa65Verify, encodePkBlob } from './official/pq/mldsa.js';
 import { buildPqTreasury } from './official/pq/address.js';
-import { pqRootFromSeed, spendingKeySeed, spendInfoBytes } from './official/pq/derivation.js';
+import { pqRootFromSeed, spendingKeySeed, spendInfoBytes, identityKeySeed } from './official/pq/derivation.js';
 import { mnemonicToSeed } from './official/hd.js';
 import { NETWORKS } from './official/network.js';
 import { Transaction } from './official/signer/transaction.js';
@@ -47,7 +47,7 @@ const seed64=mnemonicToSeed(mnemonic,passphrase);
 assert.equal(e(seed64),'c55257c360c07c72029aebc1b53c05ed0362ada38ead3e3e9efa3708e53495531f09a6987599d18264c1e1c92f2cf141630c7a3c4ab7c81b2f001698e7463b04');
 const root=pqRootFromSeed(seed64),genesisHex=NETWORKS.regtest.genesisHash!,policyIdHex='42'.repeat(32);
 const spend=spendingKeySeed(root,genesisHex,0,policyIdHex,0,7),spendKp=mldsa65Keygen(spend);
-const derivation={mnemonic,passphrase,bip39SeedHex:e(seed64),rootHex:e(root),genesisHex,genesisByteOrder:'Core display order, decoded without reversal',account:0,policyIdHex,branch:0,index:7,spendInfoHex:e(spendInfoBytes(genesisHex,0,policyIdHex,0,7)),spendingSeedHex:e(spend),publicKeyHex:e(spendKp.publicKey),secretKeyHex:e(spendKp.secretKey)};
+const derivation={mnemonic,passphrase,bip39SeedHex:e(seed64),rootHex:e(root),genesisHex,genesisByteOrder:'Core display order, decoded without reversal',account:0,policyIdHex,branch:0,index:7,spendInfoHex:e(spendInfoBytes(genesisHex,0,policyIdHex,0,7)),spendingSeedHex:e(spend),identitySeedHex:e(identityKeySeed(root,genesisHex,0)),publicKeyHex:e(spendKp.publicKey),secretKeyHex:e(spendKp.secretKey)};
 const addresses=Object.values(NETWORKS).flatMap(network=>keygen.map(k=>{
  const a=buildPqTreasury(1,[h(k.pkBlobHex)],network);
  return {network:network.name,hrp:network.bech32Hrp,threshold:1,keyId:k.id,pkBlobHex:k.pkBlobHex,leafScriptHex:e(a.script),leafHashHex:e(a.leafHash),internalKeyHex:e(a.internalKey),outputKeyHex:e(a.outputKey),parity:a.parity,controlBlockHex:e(a.controlBlock),scriptPubKeyHex:e(a.scriptPubKey),address:a.address};

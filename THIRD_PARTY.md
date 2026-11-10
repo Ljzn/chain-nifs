@@ -1,6 +1,6 @@
 # Third-party provenance and modifications
 
-Project-authored code is Apache-2.0; see LICENSE. This is an independent integration prototype, not an official TensorCash release.
+Project-authored integration code is Apache-2.0; see LICENSE and NOTICE. The root LICENSE appendix retains the standard Apache template; NOTICE credits the TensorCash NIF project contributors without assigning ownership to an upstream team, person, or company. Upstream license files and their attribution remain verbatim. This is an independent integration prototype, not an official TensorCash release.
 
 ## liboqs
 

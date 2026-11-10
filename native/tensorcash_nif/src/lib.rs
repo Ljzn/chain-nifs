@@ -45,7 +45,7 @@ fn spending_seed<'a>(
     genesis: Binary<'a>,
     account: u32,
     policy: Binary<'a>,
-    branch: u8,
+    branch: u32,
     index: u32,
 ) -> Result<Binary<'a>, String> {
     boundary(|| {
@@ -55,7 +55,11 @@ fn spending_seed<'a>(
                 seed64.as_slice(),
                 genesis.as_slice(),
                 account,
-                Some((policy.as_slice(), branch, index)),
+                Some((
+                    policy.as_slice(),
+                    u8::try_from(branch).map_err(|_| "branch must be 0 or 1")?,
+                    index,
+                )),
             )?[..],
         )
     })

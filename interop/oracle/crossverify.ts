@@ -29,8 +29,8 @@ function verifyPayment(payment: any, index: number) {
    const expected=payment.inputs[i], actual=tx.getInput(i);
    assert.equal(hex.encode(actual.txid!),hex.encode(hex.decode(expected.txid)),'input txid mismatch');
    assert.equal(actual.index,expected.vout,'input vout mismatch');
+   assert(Number.isInteger(expected.sequence)&&expected.sequence>=0&&expected.sequence<=0xffffffff,'input sequence must be an integer u32');
    assert.equal(actual.sequence,expected.sequence,'input sequence mismatch');
-   assert.equal(expected.sequence,0xfffffffd,'payment sequence must be fffffffd');
    assert.equal(actual.finalScriptSig?.length??0,0,'payment scriptSig must be empty');
    assert(typeof expected.amount==='string'&&/^(0|[1-9][0-9]*)$/.test(expected.amount),'amount must be decimal sats string');
    const amount=BigInt(expected.amount);assert(amount<=0xffffffffffffffffn,'amount exceeds u64');inputSats+=amount;

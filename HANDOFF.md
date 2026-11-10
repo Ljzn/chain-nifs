@@ -2,6 +2,16 @@
 
 本地独立repo：/Users/linjiezhang/Documents/venezia/_local/worktrees/Alice/_local/tensorcash_nif，branchdevelop。用户授权在Alice的_local新建项目实现；没有创建远程repo、没有修改Venezia业务/Parano1d工程、没有访问真实钱包秘密或广播交易。
 
+## Bob review处理（后续用户已授权修复及私有发布）
+
+Wrapper整表length已改为有界遍历，百万列表reductions回归先red后green。新增DirectNative回归发现branch256截断，已改为u32+checked窄化；对256/257/65536/u32max拒绝。新增官方identity向量、1×16/64×16、MAX_MONEY/零金额/零fee/coinbase/rawcap/sequence及DirectNative边界；本机33ExUnit、11Rust通过。
+
+有限解析器corpus覆盖512单bitmutation+512truncations；官方TS交叉验证现在接受全部u32sequence，并新增最大形状支付独立验收脚本。CI新增完整npm audit、Cargo/Hex报告与always artifact；远程状态见CI.md。
+
+LICENSE恢复标准Apache附录模板，NOTICE保留上游与本项目贡献者归属；benchmark默认写ignored results/generated，历史样本不覆盖。金额严格正数是原型限制，zero fee允许但不代表relay；MAX_MONEY来自固定Core且不是发行量声明，network/sequence/false:error语义已补文档。Jason为Rustler非可选依赖，不能简单限制为test/dev，已保留并说明。
+
+以下原型首版记录与性能为历史快照。当前fresh验证使用results/generated/native-sample.json和review-payments.json；相应命令在CI.md与workflow中。
+
 ## Ready
 
 ML-DSA65seededkeygen/Purehedgedsign/verify，官方BIP39seed64 HKDFidentity/spendingseed，3network1of1thresholdv2地址，version2/lock0/SIGHASH_ALL普通TSC完整交易与限定格式本地验签。64inputs16outputs512KiB上限，金额/双花outpoint/格式/字段长度等校验。API见README.md。

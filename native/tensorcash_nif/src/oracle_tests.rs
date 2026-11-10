@@ -53,6 +53,49 @@ fn official_wallet_hkdf_spending_seed_is_reproduced() {
     assert_eq!(&kp.secret_key[..], bytes(v, "secretKeyHex"));
 }
 #[test]
+fn official_wallet_identity_seed_is_reproduced() {
+    let o = oracle();
+    let v = &o["derivation"];
+    let seed = derivation::derive(
+        &bytes(v, "bip39SeedHex"),
+        &bytes(v, "genesisHex"),
+        v["account"].as_u64().unwrap() as u32,
+        None,
+    )
+    .unwrap();
+    assert_eq!(&seed[..], bytes(v, "identitySeedHex"));
+}
+#[test]
+fn bounded_transaction_parser_mutation_corpus() {
+    use crate::transaction::{self, Input};
+    let o = oracle();
+    let tx = &o["transactions"][0];
+    let pk = bytes(&o["keygen"][1], "publicKeyHex");
+    let inputs: Vec<Input> = tx["inputs"]
+        .as_array()
+        .unwrap()
+        .iter()
+        .map(|v| Input {
+            txid: v["txid"].as_str().unwrap().into(),
+            vout: v["vout"].as_u64().unwrap() as u32,
+            amount: v["valueSats"].as_str().unwrap().parse().unwrap(),
+            sequence: v["sequence"].as_u64().unwrap() as u32,
+        })
+        .collect();
+    let raw = bytes(tx, "rawTxHex");
+    assert_eq!(transaction::verify(&raw, &pk, "mainnet", &inputs), Ok(true));
+    for i in 0..512 {
+        let offset = i * (raw.len() - 1) / 511;
+        let mut mutated = raw.clone();
+        mutated[offset] ^= 1 << (i % 8);
+        assert_ne!(
+            transaction::verify(&mutated, &pk, "mainnet", &inputs),
+            Ok(true)
+        );
+        assert!(transaction::verify(&raw[..offset], &pk, "mainnet", &inputs).is_err());
+    }
+}
+#[test]
 fn crypto_rejects_ffi_buffer_length_errors() {
     assert!(crypto::keypair(&[0; 31]).is_err());
     assert!(crypto::sign_with_randomness(&[0; 4031], &[0; 32], &[0; 32]).is_err());

@@ -102,9 +102,14 @@ payload = %{
   ]
 }
 
-File.mkdir_p!("results")
-File.write!("interop/native.local.json", Jason.encode!(payload))
-File.write!("results/native-sample.json", Jason.encode!(payload))
+File.mkdir_p!("results/generated")
+File.write!("results/generated/native-sample.json", Jason.encode!(payload))
+
+# Optional compatibility copy for older local cross-verification commands.
+if System.get_env("TENSORCASH_NATIVE_LOCAL_COMPAT") == "1" do
+  File.mkdir_p!("interop")
+  File.write!("interop/native.local.json", Jason.encode!(payload))
+end
 
 result = %{
   runtime: %{
@@ -121,6 +126,5 @@ result = %{
     "warm release samples; sign includes seed keygen+selfverify; overall RSS is measured externally, not per-call delta"
 }
 
-File.mkdir_p!("results")
-File.write!("results/benchmark.json", Jason.encode!(result, pretty: true))
+File.write!("results/generated/benchmark.json", Jason.encode!(result, pretty: true))
 IO.puts(Jason.encode!(result, pretty: true))

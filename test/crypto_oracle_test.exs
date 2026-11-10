@@ -96,6 +96,15 @@ defmodule TensorCashNif.CryptoOracleTest do
     end
   end
 
+  test "identity seed matches official wallet and separates accounts" do
+    d = fixture()["derivation"]
+    seed = hex(d["bip39SeedHex"])
+    genesis = hex(d["genesisHex"])
+    assert Nif.identity_seed(seed, genesis, d["account"]) == {:ok, hex(d["identitySeedHex"])}
+    assert {:ok, other} = Nif.identity_seed(seed, genesis, d["account"] + 1)
+    refute other == hex(d["identitySeedHex"])
+  end
+
   test "all six official address rows match every exposed descriptor field" do
     oracle = fixture()
     assert length(oracle["addresses"]) == 6

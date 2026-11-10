@@ -9,3 +9,4 @@
 /interop/node_modules/
 **/.npm-cache/
 /interop/*.local.json
+/results/generated/

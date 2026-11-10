@@ -11,7 +11,7 @@
 - 普通TSC交易：version2、locktime0、SIGHASH_ALL=01，所有输入属于同一把key的上述地址，所有输出为所选network的v2地址；最多64inputs、16outputs、raw512KiB。
 - canonical交易序列化、TapSighash/ML-DSA、见证、txid/wtxid、fee、weight/vsize；本地限定格式解析与完整签名验证。
 
-不支持传统secp输出、不同key混合输入、多签、资产/扩展输出、annex、其他sighash模式或通用脚本VM。verify_payment只验证给定prevout元数据下的格式/授权，不查询UTXO是否存在/已花费、成熟度、链状态或交易是否满足节点relay政策。fee返回值是输入金额减输出金额，不是网络报价或最小手续费判定。serialized raw没有network字段。
+不支持传统secp输出、不同key混合输入、多签、资产/扩展输出、annex、其他sighash模式或通用脚本VM。verify_payment只验证给定prevout元数据下的格式/授权，不查询UTXO是否存在/已花费、成熟度、链状态或交易是否满足节点relay政策。fee返回值是输入金额减输出金额，不是网络报价或最小手续费判定。serialized raw没有network字段：相同witness program在不同network具有相同脚本/交易字节。build校验输出地址HRP是否匹配所选network；verify_payment只校验合法network参数、脚本格式和授权，不能从raw恢复或证明输出HRP/network。
 
 ## 固定上游与构建
 
@@ -39,6 +39,8 @@ bin/run为每次命令设置项目本地RUSTUP_HOME/CARGO_HOME/MIX_HOME/HEX_HOME
 
 返回 {:ok, result} 或 {:error, reason}。Network可以是 :mainnet/:testnet/:regtest 或对应字符串。
 
+verify/3和verify_payment/4的{:ok, true}表示在本地验证范围内有效；{:ok, false}表示验证未通过，例如长度正确的无效签名。verify_payment对可继续解析的prevout/sequence/见证内容不匹配或缺失签名可返回false，但false不承诺完成所有解析检查。格式、长度、限额、解析或结构性元数据问题返回{:error, reason}；金额不合法、合计超限、输出超过给定输入金额，以及某些结构性见证/元数据不匹配均可能是error。有效范围内的输入金额改变通常导致摘要验签false，不能假定所有金额或prevout不匹配都返回false。调用方必须分别处理true、false、error。
+
 - TensorCashNif.public_key(seed32)
 - TensorCashNif.sign(seed32, digest32)
 - TensorCashNif.verify(public_key1952, digest32, signature3309)
@@ -50,6 +52,10 @@ bin/run为每次命令设置项目本地RUSTUP_HOME/CARGO_HOME/MIX_HOME/HEX_HOME
 - TensorCashNif.verify_payment(raw_binary, public_key1952, network, inputs)
 
 输入maps：%{txid: display_order_hex64, vout: u32, amount: integer_sats, sequence: u32}。输出maps：%{address: canonical_address, amount: integer_sats}。字段必须为atom keys。genesis32的字节序使用官方钱包genesis hex直接解码，不自行reverse；txid字段是浏览器显示序，wire编码会反转。地址生成结果含address/script_pubkey_hex/leaf_script_hex/control_block_hex/output_key_hex/leaf_hash_hex。
+
+所有输入/输出amount必须严格为正整数sats，单项和输入/输出各自合计不得超过MAX_MONEY=2_100_000_000_000_000。拒绝零值amount是本原型限制；固定Core版本38fabe7ed2d5ccec5d303c7a131c87ca3f4a7a52的src/consensus/amount.h中MoneyRange允许0。MAX_MONEY与该版本amount.h的21000000 * COIN一致，是金额范围sanity bound，不是对TensorCash发行总量的声明。输入总额等于输出总额时fee=0允许；这不代表节点dust/最低费率/relay政策会接纳。
+
+sequence接受任意u32整数（0..0xFFFFFFFF）；示例0xFFFFFFFD不是强制值。sequence被序列化并承诺进签名摘要，verify会对照给定值；本地验证不检查BIP68相对锁定成熟度或RBF政策。
 
 Payment含unsigned_hex/raw_hex/txid/wtxid/fee/weight/vsize/digests；hex均小写。传给verify_payment前用 Base.decode16!(payment.raw_hex, case: :lower) 转成binary。重复签名同一笔交易的txid固定、wtxid通常不同。unsigned_payment的weight/vsize是实际未签名数据的大小，不可用作最终手续费预算；signed build返回实际见证weight。
 
@@ -74,8 +80,12 @@ interop/oracle里14个官方TypeScript模块逐字节保留，source-manifest记
 fixture含2组seeded公私钥、4组显式随机数签名、官方HKDF、6组地址、3个network的2in2out完整交易；另保留官方Core捕获签名和NIST ACVP子集。Rust逐字节比较公钥、展开私钥和显式rnd签名；ExUnit通过真实NIF核验官方交易，也对Native直接入口进行畸形输入测试。
 
     ERL_FLAGS="+S 2:2" bin/run mix run bench/run.exs
-    npm --prefix interop run --silent crossverify < interop/native.local.json
+    npm --prefix interop run --silent crossverify < results/generated/native-sample.json
     ERL_FLAGS="+S 2:2" bin/run mix run bench/reload.exs
+
+bench/run.exs先创建目录，默认只写ignored的results/generated/benchmark.json和results/generated/native-sample.json，不覆盖tracked历史快照。需要旧路径兼容副本时，为benchmark命令设置TENSORCASH_NATIVE_LOCAL_COMPAT=1，另写ignored的interop/native.local.json。从项目根重放历史签名/交易快照（不重新生成签名）：
+
+    npm --prefix interop run --silent crossverify < results/native-sample.json
 
 crossverify使用官方钱包解析器/两套摘要路径/MLDSA验签，验收NIF产生的随机签名及完整交易，而非同一NIF自验。正常reload测试不是native崩溃恢复承诺。性能结果保留在results，实际本机结果见下文；[CI说明](CI.md)明确区分本机验证与尚未执行的远程Linux配置。
 
@@ -96,7 +106,9 @@ Apple M2 / 8GiB，release NIF，BEAM普通/dirty CPU scheduler各2。原语31样
 
 8份fresh NIF签名及1笔fresh2in2out完整交易已由独立官方钱包代码验证通过。Rust9项、ExUnit20项（含并发）、mix precommit及warnings-as-errors编译均已通过；完整交接记录于[HANDOFF](HANDOFF.md)。没有节点接纳验证；benchmark的固定10,000sat fee是合成差额，尤其64input时不代表满足网络最低费率。
 
-原始结果：[benchmark](results/benchmark.json)、[RSS/时间](results/time.txt)、[官方交叉验签](results/crossverify.json)、[reload](results/reload.txt)。
+历史快照（保持tracked，不由新benchmark重写）：[benchmark](results/benchmark.json)、[RSS/时间](results/time.txt)、[官方交叉验签](results/crossverify.json)、[reload](results/reload.txt)。
+
+远程Linux CI尚未验证通过。后续CI应保存可复查的npm audit / cargo audit JSON和benchmark / crossverify输出artifact，并记录工具版本、执行状态及退出码；这是待取得的远程审计证据，不能把历史本机结论当作当前远程通过。
 
 ## Native边界与秘密
 

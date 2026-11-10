@@ -40,10 +40,20 @@ jobs:
           bin/run mix test --warnings-as-errors
           npm --prefix interop run check
           bin/run mix run --no-compile bench/run.exs
-          npm --prefix interop run --silent crossverify < interop/native.local.json
-          bin/run mix run --no-compile bench/reload.exs
+          npm --prefix interop run --silent crossverify < results/generated/native-sample.json > results/generated/crossverify.json
+          bin/run mix run --no-compile bench/crossverify_review.exs
+          npm --prefix interop run --silent crossverify < results/generated/review-payments.json > results/generated/review-crossverify.json
+          bin/run mix run --no-compile bench/reload.exs > results/generated/reload.txt
       - name: Audit locked dependencies
         run: |
           bin/run mix hex.audit
           bin/run cargo install cargo-audit --version 0.22.2 --locked
-          bin/run cargo audit --file native/tensorcash_nif/Cargo.lock
+          bin/run bin/audit
+      - name: Preserve audit and interoperability evidence
+        if: always()
+        uses: actions/upload-artifact@b7c566a772e6b6bfb58ed0dc250532a479d7789f # v6
+        with:
+          name: linux-validation
+          path: results/generated/
+          if-no-files-found: warn
+          retention-days: 30

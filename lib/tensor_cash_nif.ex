@@ -107,11 +107,14 @@ defmodule TensorCashNif do
   defp raw(b) when is_binary(b) and byte_size(b) <= @max_raw, do: :ok
   defp raw(_), do: {:error, "raw transaction exceeds 524288 bytes or is not binary"}
 
-  defp entries(list, max) when is_list(list) do
-    if length(list) in 1..max, do: :ok, else: {:error, "entry count outside prototype limit"}
-  end
-
+  defp entries([], _), do: {:error, "entry count outside prototype limit"}
+  defp entries([_ | tail], max), do: bounded_tail(tail, max - 1)
   defp entries(_, _), do: {:error, "expected proper list"}
+
+  defp bounded_tail([], _remaining), do: :ok
+  defp bounded_tail([_ | _], 0), do: {:error, "entry count outside prototype limit"}
+  defp bounded_tail([_ | tail], remaining), do: bounded_tail(tail, remaining - 1)
+  defp bounded_tail(_, _), do: {:error, "expected proper list"}
   defp network(n) when n in [:mainnet, :testnet, :regtest], do: {:ok, Atom.to_string(n)}
   defp network(n) when n in ["mainnet", "testnet", "regtest"], do: {:ok, n}
   defp network(_), do: {:error, "unsupported network"}
