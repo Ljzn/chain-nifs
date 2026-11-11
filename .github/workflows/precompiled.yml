@@ -1,0 +1,39 @@
+name: Alpine precompiled NIFs
+on:
+  workflow_dispatch:
+permissions:
+  contents: read
+jobs:
+  precompiled:
+    name: ${{ matrix.arch }} / Alpine musl
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - arch: amd64
+            runner: ubuntu-24.04
+          - arch: arm64
+            runner: ubuntu-24.04-arm
+    runs-on: ${{ matrix.runner }}
+    timeout-minutes: 60
+    steps:
+      - uses: actions/checkout@d23441a48e516b6c34aea4fa41551a30e30af803
+        with:
+          submodules: recursive
+          fetch-depth: 0
+      - name: Compile pinned Alpine binaries
+        run: |
+          mkdir -p .cache
+          bin/build-precompiled linux/${{ matrix.arch }} 2>&1 | tee .cache/precompiled-build.log
+      - name: Compile wrappers without native tools and test final release
+        run: bin/check-precompiled linux/${{ matrix.arch }} 2>&1 | tee .cache/precompiled-check.log
+      - name: Preserve binaries, manifests and validation logs
+        if: always()
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02
+        with:
+          name: precompiled-${{ matrix.arch }}
+          if-no-files-found: error
+          path: |
+            nifs/*/priv/precompiled/**
+            .cache/precompiled-build.log
+            .cache/precompiled-check.log
