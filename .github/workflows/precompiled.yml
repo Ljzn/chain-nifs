@@ -1,6 +1,14 @@
 name: Alpine precompiled NIFs
 on:
   workflow_dispatch:
+  push:
+    paths:
+      - "nifs/**/priv/precompiled/**"
+      - "nifs/**/lib/**/precompiled.ex"
+      - "nifs/**/lib/**/native.ex"
+      - "docker/**"
+      - "bin/check-precompiled"
+      - ".github/workflows/precompiled.yml"
 permissions:
   contents: read
 jobs:
@@ -22,17 +30,21 @@ jobs:
           submodules: recursive
           fetch-depth: 0
       - name: Compile pinned Alpine binaries
+        if: github.event_name == 'workflow_dispatch'
         run: |
           mkdir -p .cache
           bin/build-precompiled linux/${{ matrix.arch }} 2>&1 | tee .cache/precompiled-build.log
       - name: Compile wrappers without native tools and test final release
-        run: bin/check-precompiled linux/${{ matrix.arch }} 2>&1 | tee .cache/precompiled-check.log
+        run: |
+          mkdir -p .cache
+          bin/check-precompiled linux/${{ matrix.arch }} 2>&1 | tee .cache/precompiled-check.log
       - name: Preserve binaries, manifests and validation logs
         if: always()
         uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02
         with:
           name: precompiled-${{ matrix.arch }}
           if-no-files-found: error
+          include-hidden-files: true
           path: |
             nifs/*/priv/precompiled/**
             .cache/precompiled-build.log

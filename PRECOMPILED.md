@@ -8,6 +8,32 @@ sha256:fdc742374710541224a0d520d81fcd8e9a50828dccffe4cbd2638b871f41ab7f.
 Compilation runs inside the requested platform, optionally under Docker
 Buildx emulation. It does not explicitly cross-compile or produce glibc output.
 
+## Consume committed binaries without native build tools
+
+Keep the three children as normal Mix path dependencies from a pinned checkout.
+In the consuming Alpine/OTP27 builder, before deps.compile:
+
+~~~sh
+export CHAIN_NIFS_MODE=precompiled
+mix deps.get --only prod --check-locked
+mix deps.compile
+mix release
+~~~
+
+The host musl architecture selects its committed artifact automatically. Optional
+CHAIN_NIFS_TARGET may explicitly name a supported Rust triple, but it must match
+the host. The final release does not need these environment variables: its NIF
+load paths are selected at Elixir compile time, and deployed bytes/host/OTP are
+checked again before loading. No Cargo, Rust, CMake, Go or Node is invoked. Hex
+dependency retrieval still needs network unless its usual caches are provided.
+Source mode remains the default. Changing environment variables alone does not
+invalidate Mix incremental outputs; use fresh build outputs when changing modes,
+or force dependency compilation with mix deps.compile --force.
+
+Each artifact and manifest is an external resource. Missing files, changed hashes,
+wrong project/schema/OTP, glibc hosts and mismatched architectures fail explicitly.
+SHA verification is a consistency check; it is not a signature.
+
 ## Generate binaries
 
 Run from this monorepo with Docker Buildx and initialized official submodules:
@@ -68,6 +94,12 @@ including official submodule source. The CLI never uses Venezia's broader
 research workspace as its Docker context.
 
 ## Runtime acceptance
+
+Run bin/check-precompiled all (or linux/amd64 / linux/arm64). It compiles all
+three wrappers and a Mix release in a clean Elixir image with native tools absent,
+runs each complete ExUnit suite, then runs the final Alpine release with network
+disabled. The release exercises a real Parano1d proof, ML-DSA sign/verify and a
+Blocknet range proof plus negative cases.
 
 Generation alone does not prove runtime compatibility. Validate both platforms
 against Venezia's actual Alpine runtime with Rust/Cargo/Go absent, compile

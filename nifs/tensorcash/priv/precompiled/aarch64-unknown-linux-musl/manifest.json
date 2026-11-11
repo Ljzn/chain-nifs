@@ -1,0 +1,15 @@
+{
+  "schema_version": 1,
+  "project": "tensorcash_nif",
+  "target": "aarch64-unknown-linux-musl",
+  "otp_major": 27,
+  "sha256": "8bf80fd0d9507e2fc7a5b5c63c2e6962dd827b8caa68ead205a029d099090883",
+  "source_revision": "fabebe947a2d4d3226f100b797fd0ace91d985a8",
+  "build_base": "hexpm/elixir:1.20.0-erlang-27.3.4.11-alpine-3.21.7@sha256:fdc742374710541224a0d520d81fcd8e9a50828dccffe4cbd2638b871f41ab7f",
+  "rust_version": "rustc 1.96.0 (ac68faa20 2026-05-25)",
+  "rustflags": "-C target-feature=-crt-static",
+  "upstream_pins": {
+    "parano1d": "f47f386c842ab60d65b70351b0a5b2729f1d9179",
+    "liboqs": "97f6b86b1b6d109cfd43cf276ae39c2e776aed80"
+  }
+}

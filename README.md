@@ -14,6 +14,10 @@ Parano1d、TensorCash、Blocknet 的独立 Elixir/Rustler 原型合集。三个�
 
 每个子项目的原有 review、性能和 CI 记录属于对应原仓库提交的历史证据，不能当作本 monorepo 的验收结果。根目录入口优先使用下方命令；子目录直接运行的缓存行为以其自身说明为准。
 
+## Venezia Alpine 预编译模式
+
+使用仓库中的 musl 产物时，在 Alpine 3.21 / OTP 27 构建环境设置 CHAIN_NIFS_MODE=precompiled，即可编译 Elixir 包装层并打包 release，无需 Rust/Cargo/CMake/Go。支持 amd64 和 arm64，自动检查平台、OTP、manifest 与 SHA-256；缺失或不匹配时明确失败。默认仍从源码编译。使用方式、模式切换、构建来源和容器验证见 [PRECOMPILED.md](PRECOMPILED.md)。
+
 ## 克隆与准备
 
 ~~~sh
