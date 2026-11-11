@@ -1,0 +1,483 @@
+{
+  "schedulers_online": 2,
+  "otp": "27",
+  "elixir": "1.20.5",
+  "scenarios": [
+    {
+      "verify": {
+        "cold": {
+          "duration_us": 61037,
+          "beam_memory_before": {
+            "atom": 680161,
+            "atom_used": 659740,
+            "binary": 1265584,
+            "code": 13393302,
+            "ets": 1382936,
+            "processes": 17700416,
+            "processes_used": 17687408,
+            "system": 44716520,
+            "total": 62416936,
+            "caller_process": 1121600,
+            "process_rss_bytes": null
+          },
+          "beam_memory_after": {
+            "atom": 680161,
+            "atom_used": 659740,
+            "binary": 1356064,
+            "code": 13393302,
+            "ets": 1382936,
+            "processes": 17704152,
+            "processes_used": 17691144,
+            "system": 44806296,
+            "total": 62510448,
+            "caller_process": 1121600,
+            "process_rss_bytes": null
+          }
+        },
+        "warm": {
+          "duration_us": 41504,
+          "beam_memory_before": {
+            "atom": 680161,
+            "atom_used": 659740,
+            "binary": 1444784,
+            "code": 13393302,
+            "ets": 1382936,
+            "processes": 17712056,
+            "processes_used": 17699048,
+            "system": 44895856,
+            "total": 62607912,
+            "caller_process": 1121600,
+            "process_rss_bytes": null
+          },
+          "beam_memory_after": {
+            "atom": 680161,
+            "atom_used": 659740,
+            "binary": 1534768,
+            "code": 13393302,
+            "ets": 1382936,
+            "processes": 17712056,
+            "processes_used": 17699048,
+            "system": 44985136,
+            "total": 62697192,
+            "caller_process": 1121600,
+            "process_rss_bytes": null
+          }
+        }
+      },
+      "txid": "a103f38def9d208c0e0dc9a5b230b02e50e0a5ae653b58e12d0c9f6a03267de7",
+      "inputs": 1,
+      "outputs": 1,
+      "pages": 1,
+      "unsigned_bytes": 330,
+      "raw_bytes": 89934,
+      "proof_bytes": 89604,
+      "warm_raw_bytes": 89134,
+      "warm_proof_bytes": 88804,
+      "proofs_differ": true,
+      "prove": {
+        "cold": {
+          "duration_us": 1326212,
+          "beam_memory_before": {
+            "atom": 680161,
+            "atom_used": 659449,
+            "binary": 1185120,
+            "code": 13354451,
+            "ets": 1377416,
+            "processes": 17712472,
+            "processes_used": 17699464,
+            "system": 44585429,
+            "total": 62297901,
+            "caller_process": 1121896,
+            "process_rss_bytes": null
+          },
+          "beam_memory_after": {
+            "atom": 680161,
+            "atom_used": 659740,
+            "binary": 1310432,
+            "code": 13393302,
+            "ets": 1382936,
+            "processes": 17712056,
+            "processes_used": 17699048,
+            "system": 44760664,
+            "total": 62472720,
+            "caller_process": 1115592,
+            "process_rss_bytes": null
+          }
+        },
+        "warm": {
+          "duration_us": 1943379,
+          "beam_memory_before": {
+            "atom": 680161,
+            "atom_used": 659740,
+            "binary": 1355728,
+            "code": 13393302,
+            "ets": 1382936,
+            "processes": 17712056,
+            "processes_used": 17699048,
+            "system": 44806800,
+            "total": 62518856,
+            "caller_process": 1121600,
+            "process_rss_bytes": null
+          },
+          "beam_memory_after": {
+            "atom": 680161,
+            "atom_used": 659740,
+            "binary": 1445264,
+            "code": 13393302,
+            "ets": 1382936,
+            "processes": 17699264,
+            "processes_used": 17686256,
+            "system": 44895632,
+            "total": 62594896,
+            "caller_process": 1121600,
+            "process_rss_bytes": null
+          }
+        }
+      }
+    },
+    {
+      "verify": {
+        "cold": {
+          "duration_us": 38309,
+          "beam_memory_before": {
+            "atom": 680161,
+            "atom_used": 659740,
+            "binary": 1535752,
+            "code": 13393302,
+            "ets": 1382936,
+            "processes": 17696248,
+            "processes_used": 17683240,
+            "system": 44986824,
+            "total": 62683072,
+            "caller_process": 1121600,
+            "process_rss_bytes": null
+          },
+          "beam_memory_after": {
+            "atom": 680161,
+            "atom_used": 659740,
+            "binary": 1626776,
+            "code": 13393302,
+            "ets": 1382936,
+            "processes": 17704152,
+            "processes_used": 17691144,
+            "system": 45077144,
+            "total": 62781296,
+            "caller_process": 1121600,
+            "process_rss_bytes": null
+          }
+        },
+        "warm": {
+          "duration_us": 38819,
+          "beam_memory_before": {
+            "atom": 680161,
+            "atom_used": 659740,
+            "binary": 1446952,
+            "code": 13393302,
+            "ets": 1382936,
+            "processes": 16808856,
+            "processes_used": 16795848,
+            "system": 44898024,
+            "total": 61706880,
+            "caller_process": 203488,
+            "process_rss_bytes": null
+          },
+          "beam_memory_after": {
+            "atom": 680161,
+            "atom_used": 659740,
+            "binary": 1538088,
+            "code": 13393302,
+            "ets": 1382936,
+            "processes": 16793944,
+            "processes_used": 16780936,
+            "system": 44988456,
+            "total": 61782400,
+            "caller_process": 203488,
+            "process_rss_bytes": null
+          }
+        }
+      },
+      "txid": "c5634a7cbd9985a630d14c5b0db388daf44801ab0b859fdccb7260bf8f98222c",
+      "inputs": 2,
+      "outputs": 1,
+      "pages": 1,
+      "unsigned_bytes": 330,
+      "raw_bytes": 90478,
+      "proof_bytes": 90148,
+      "warm_raw_bytes": 90286,
+      "warm_proof_bytes": 89956,
+      "proofs_differ": true,
+      "prove": {
+        "cold": {
+          "duration_us": 1206104,
+          "beam_memory_before": {
+            "atom": 680161,
+            "atom_used": 659740,
+            "binary": 1535048,
+            "code": 13393302,
+            "ets": 1382936,
+            "processes": 17704152,
+            "processes_used": 17691144,
+            "system": 44985416,
+            "total": 62689568,
+            "caller_process": 1121600,
+            "process_rss_bytes": null
+          },
+          "beam_memory_after": {
+            "atom": 680161,
+            "atom_used": 659740,
+            "binary": 1536232,
+            "code": 13393302,
+            "ets": 1382936,
+            "processes": 17712056,
+            "processes_used": 17699048,
+            "system": 44986600,
+            "total": 62698656,
+            "caller_process": 1121600,
+            "process_rss_bytes": null
+          }
+        },
+        "warm": {
+          "duration_us": 1132587,
+          "beam_memory_before": {
+            "atom": 680161,
+            "atom_used": 659740,
+            "binary": 1356744,
+            "code": 13393302,
+            "ets": 1382936,
+            "processes": 16808856,
+            "processes_used": 16795848,
+            "system": 44807816,
+            "total": 61616672,
+            "caller_process": 203488,
+            "process_rss_bytes": null
+          },
+          "beam_memory_after": {
+            "atom": 680161,
+            "atom_used": 659740,
+            "binary": 1447432,
+            "code": 13393302,
+            "ets": 1382936,
+            "processes": 16781152,
+            "processes_used": 16768144,
+            "system": 44897800,
+            "total": 61678952,
+            "caller_process": 203488,
+            "process_rss_bytes": null
+          }
+        }
+      }
+    },
+    {
+      "verify": {
+        "cold": {
+          "duration_us": 38802,
+          "beam_memory_before": {
+            "atom": 680161,
+            "atom_used": 659740,
+            "binary": 1266736,
+            "code": 13393302,
+            "ets": 1382936,
+            "processes": 16776664,
+            "processes_used": 16765128,
+            "system": 44717192,
+            "total": 61493856,
+            "caller_process": 203488,
+            "process_rss_bytes": null
+          },
+          "beam_memory_after": {
+            "atom": 680161,
+            "atom_used": 659740,
+            "binary": 1358272,
+            "code": 13393302,
+            "ets": 1382936,
+            "processes": 16799480,
+            "processes_used": 16787944,
+            "system": 44808024,
+            "total": 61607504,
+            "caller_process": 197480,
+            "process_rss_bytes": null
+          }
+        },
+        "warm": {
+          "duration_us": 38509,
+          "beam_memory_before": {
+            "atom": 680161,
+            "atom_used": 659740,
+            "binary": 1447792,
+            "code": 13393302,
+            "ets": 1382936,
+            "processes": 16807384,
+            "processes_used": 16795848,
+            "system": 44898112,
+            "total": 61705496,
+            "caller_process": 203488,
+            "process_rss_bytes": null
+          },
+          "beam_memory_after": {
+            "atom": 680161,
+            "atom_used": 659740,
+            "binary": 1538832,
+            "code": 13393302,
+            "ets": 1382936,
+            "processes": 16792472,
+            "processes_used": 16780936,
+            "system": 44988448,
+            "total": 61780920,
+            "caller_process": 203488,
+            "process_rss_bytes": null
+          }
+        }
+      },
+      "txid": "ce98eefd3c9877c8bfa64e08bc6007436b919a600ac8860d2608ac3e33b26256",
+      "inputs": 9,
+      "outputs": 2,
+      "pages": 2,
+      "unsigned_bytes": 653,
+      "raw_bytes": 90865,
+      "proof_bytes": 90212,
+      "warm_raw_bytes": 90065,
+      "warm_proof_bytes": 89412,
+      "proofs_differ": true,
+      "prove": {
+        "cold": {
+          "duration_us": 1630332,
+          "beam_memory_before": {
+            "atom": 680161,
+            "atom_used": 659740,
+            "binary": 1538792,
+            "code": 13393302,
+            "ets": 1382936,
+            "processes": 16800952,
+            "processes_used": 16787944,
+            "system": 44989160,
+            "total": 61790112,
+            "caller_process": 89120,
+            "process_rss_bytes": null
+          },
+          "beam_memory_after": {
+            "atom": 680161,
+            "atom_used": 659740,
+            "binary": 1267344,
+            "code": 13393302,
+            "ets": 1382936,
+            "processes": 16840872,
+            "processes_used": 16829336,
+            "system": 44717096,
+            "total": 61557968,
+            "caller_process": 203488,
+            "process_rss_bytes": null
+          }
+        },
+        "warm": {
+          "duration_us": 1419771,
+          "beam_memory_before": {
+            "atom": 680161,
+            "atom_used": 659740,
+            "binary": 1357808,
+            "code": 13393302,
+            "ets": 1382936,
+            "processes": 16792472,
+            "processes_used": 16780936,
+            "system": 44808264,
+            "total": 61600736,
+            "caller_process": 203488,
+            "process_rss_bytes": null
+          },
+          "beam_memory_after": {
+            "atom": 680161,
+            "atom_used": 659740,
+            "binary": 1448400,
+            "code": 13393302,
+            "ets": 1382936,
+            "processes": 16779680,
+            "processes_used": 16768144,
+            "system": 44898016,
+            "total": 61677696,
+            "caller_process": 203488,
+            "process_rss_bytes": null
+          }
+        }
+      }
+    }
+  ],
+  "concurrency_check": {
+    "overlap_result": "busy",
+    "overlap_duration_us": 224,
+    "sequential_verifications": [
+      {
+        "duration_us": 38195,
+        "beam_memory_before": {
+          "atom": 680161,
+          "atom_used": 659740,
+          "binary": 1630000,
+          "code": 13393302,
+          "ets": 1382936,
+          "processes": 16801232,
+          "processes_used": 16790448,
+          "system": 45079752,
+          "total": 61880984,
+          "caller_process": 95128,
+          "process_rss_bytes": null
+        },
+        "beam_memory_after": {
+          "atom": 680161,
+          "atom_used": 659740,
+          "binary": 1356464,
+          "code": 13393302,
+          "ets": 1382936,
+          "processes": 16840872,
+          "processes_used": 16829336,
+          "system": 44806216,
+          "total": 61647088,
+          "caller_process": 197480,
+          "process_rss_bytes": null
+        }
+      },
+      {
+        "duration_us": 37856,
+        "beam_memory_before": {
+          "atom": 680161,
+          "atom_used": 659740,
+          "binary": 1355984,
+          "code": 13393302,
+          "ets": 1382936,
+          "processes": 16776624,
+          "processes_used": 16765128,
+          "system": 44804624,
+          "total": 61581248,
+          "caller_process": 203488,
+          "process_rss_bytes": null
+        },
+        "beam_memory_after": {
+          "atom": 680161,
+          "atom_used": 659740,
+          "binary": 1446912,
+          "code": 13393302,
+          "ets": 1382936,
+          "processes": 16799440,
+          "processes_used": 16787944,
+          "system": 44894848,
+          "total": 61694288,
+          "caller_process": 197480,
+          "process_rss_bytes": null
+        }
+      }
+    ],
+    "gate_released": true
+  },
+  "schema_version": 1,
+  "generated_at": "2026-11-10T04:26:06.855470Z",
+  "dirty_cpu_schedulers": 2,
+  "authorization_version": 4,
+  "native_max_concurrency": 1,
+  "rayon_threads": 2,
+  "rayon_lifetime": "per-call scoped workers; joined before NIF return",
+  "native_build_mode": "release",
+  "upstream_sha": "f47f386c842ab60d65b70351b0a5b2729f1d9179",
+  "authorize_includes": "proof generation and complete self-verification",
+  "rss_note": "process RSS samples include native memory; use /usr/bin/time -l for peak RSS",
+  "cold_definition": "first call per shape; only inputs=1 has process-cold native caches",
+  "duration_unit": "microsecond",
+  "memory_unit": "byte",
+  "process_rss_null_means": "own-process ps sampling unavailable; use external peak RSS"
+}

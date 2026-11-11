@@ -1,0 +1,12 @@
+/_build/
+/deps/
+/native/parano1d_nif/target/
+/priv/native/
+/.rustup/
+/.cargo-cache/
+/.hex-cache/
+/results/*
+!/results/benchmark.json
+!/results/host.txt
+!/results/reload.txt
+!/results/time.txt

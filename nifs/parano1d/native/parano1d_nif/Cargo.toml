@@ -1,0 +1,22 @@
+[package]
+name = "parano1d_nif"
+version = "0.1.0"
+edition = "2021"
+
+[lib]
+crate-type = ["cdylib"]
+
+[dependencies]
+rustler = "=0.37.2"
+noid_core = { path = "../../vendor/parano1d/noid_core" }
+noid_poseidon2b = { path = "../../vendor/parano1d/noid_poseidon2b" }
+noid_tx = { path = "../../vendor/parano1d/noid_tx" }
+noid_gkr = { path = "../../vendor/parano1d/noid_gkr" }
+rayon = "1.10"
+zeroize = "1.8"
+hex = "0.4"
+
+[profile.release]
+lto = "thin"
+codegen-units = 1
+panic = "unwind"
