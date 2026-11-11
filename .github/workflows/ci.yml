@@ -1,0 +1,42 @@
+name: Linux validation
+on: [push, pull_request, workflow_dispatch]
+permissions:
+  contents: read
+jobs:
+  linux:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 45
+    env:
+      MIX_ENV: test
+      ERL_FLAGS: "+S 2:2"
+      GOTOOLCHAIN: go1.24.12+auto
+    steps:
+      - uses: actions/checkout@d23441a48e516b6c34aea4fa41551a30e30af803 # v6
+        with:
+          persist-credentials: false
+      - uses: erlef/setup-beam@54075bcc5e249e4758d363f27d099f55d843f124
+        with:
+          otp-version: "27.3.4.19"
+          elixir-version: "1.20.5"
+      - name: Prepare pinned project-local tools and locked dependencies
+        run: |
+          bin/run rustup toolchain install 1.96.0 --profile minimal --component rustfmt --component clippy
+          bin/run mix local.hex --force
+          bin/run mix local.rebar --force
+          bin/run mix deps.get --check-locked
+          bin/run interop/run-go wire < test/fixtures/official_vectors.json > /dev/null
+          python3 --version
+      - name: Check release native code, real NIF, fresh oracles and maximum shape
+        run: bin/check
+      - name: Audit locked dependencies
+        run: |
+          bin/run cargo install cargo-audit --version 0.22.2 --locked
+          bin/audit
+      - name: Preserve interoperability, benchmark and audit evidence
+        if: always()
+        uses: actions/upload-artifact@b7c566a772e6b6bfb58ed0dc250532a479d7789f # v6
+        with:
+          name: linux-validation
+          path: results/generated/
+          if-no-files-found: warn
+          retention-days: 30

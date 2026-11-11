@@ -1,0 +1,4 @@
+#!/bin/sh
+set -eu
+root=$(CDPATH= cd -- "$(dirname -- "$0")/.." && pwd)
+exec "$root/bin/run" "${CARGO:-$HOME/.cargo/bin/cargo}" +1.96.0 run --quiet --locked --manifest-path interop/official-rust/Cargo.toml -- "$@"

@@ -1,0 +1,8 @@
+#!/bin/sh
+set -eu
+root=$(CDPATH= cd -- "$(dirname -- "$0")/.." && pwd)
+export GOCACHE="${GOCACHE:-$root/interop/.go-build}"
+export GOMODCACHE="${GOMODCACHE:-$root/interop/.go-mod}"
+export GOTOOLCHAIN="${GOTOOLCHAIN:-go1.24.12+auto}"
+cd "$root/interop/official-go"
+exec "${GO:-go}" run . "$@"

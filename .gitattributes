@@ -1,0 +1,5 @@
+# Byte-exact official source snapshots intentionally preserve upstream whitespace.
+# interop/verify_provenance.py verifies their hashes; format the adapted native core normally.
+interop/official-rust/src/upstream/*.rs -whitespace
+interop/official-go/protocol/params/*.go -whitespace
+interop/official-go/wallet/memo.go -whitespace
