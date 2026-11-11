@@ -26,7 +26,7 @@ bin/audit
 
 ## 验证证据
 
-- 最终源码 revision/dirty 状态：待主维护者本地提交后填写。
+- 已验收实现提交：98d50b9a594e0dc1122047a1d9d2d19a0895cf9c（develop）。其后仅追加本交接中的提交标记；最终 HEAD 见 git log，交付时工作区 clean。
 - 主维护者完整执行 [bin/check](bin/check)，退出码 0；Rust fmt、release clippy -D warnings、原生 release Rust 7 测试、官方 oracle Rust 20 测试和 mix precommit / ExUnit 18 测试均通过。oracle 固定 rand 0.8.8。
 - 前后来源/fixture snapshot 均为 16 项并通过；固定 fixture 的独立 Go/Rust 校验通过。
 - fresh 官方生成数据通过：1 个环签名 case、1 笔 payment；结果在 results/generated/fresh-oracle-crossverify.json。
