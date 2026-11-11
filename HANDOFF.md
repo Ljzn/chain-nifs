@@ -6,6 +6,10 @@
 
 三个独立 Mix/Rustler 项目位于 nifs/parano1d、nifs/tensorcash、nifs/blocknet。保留原 API、Rust/Hex/npm lockfile 和许可，不建立 umbrella 或统一 Cargo workspace。协议源码、固定 fixture 与官方来源未改变。唯一子项目脚本调整是 Parano1d bin/run 允许外部缓存环境覆盖，默认仍为项目本地。
 
+## Scheduler 环境 review 修复
+
+根 bin/check 现在默认导出 ERL_FLAGS="${ERL_FLAGS:-+S 2:2}"，显式非空配置保持不变；不修改或放宽 Parano1d scheduler 测试。未设置 ERL_FLAGS 的实际完整命令 `env -u ERL_FLAGS bin/check all` 已 exit 0，ExUnit 26/41/31、Rust 4/11/10 和官方20项及互操作检查通过。实际赋值语句的显式覆盖 `+S 2:2 +A 4` 保留检查、sh -n 与 git diff --check 也通过。日志 .cache/check-scheduler-default.log。仅修改根入口和说明，六个预编译库及 manifest 未改，Venezia 固定依赖提交不需要改变。
+
 ## 统一入口
 
 ~~~sh

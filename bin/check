@@ -9,6 +9,8 @@ case "${1:-all}" in
   *) echo "Unknown project: $1" >&2; exit 2 ;;
 esac
 export MIX_ENV=test
+# The scheduler regression harness requires two normal schedulers by default.
+export ERL_FLAGS="${ERL_FLAGS:-+S 2:2}"
 for project in $projects; do
   printf 'Check: %s\n' "$project"
   case "$project" in

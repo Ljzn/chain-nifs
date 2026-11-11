@@ -47,6 +47,8 @@ bin/run parano1d mix precommit
 
 [bin/run](bin/run) 的第一个参数始终是项目名，后面是要执行的命令；执行目录切换到对应子项目。[bin/setup](bin/setup)、[bin/check](bin/check)、[bin/audit](bin/audit) 接受 all 或一个项目名。独立的 Mix/Cargo/npm lockfile 继续由各项目维护，不在根目录重新解析成统一依赖图。
 
+[bin/check](bin/check) 默认使用 `ERL_FLAGS="+S 2:2"`，以满足 Parano1d scheduler 回归测试；根 `mix precommit` 同样经过此入口。调用者显式设置的非空 `ERL_FLAGS` 会保留，运行完整测试时仍需满足两个在线 scheduler 的前提。
+
 根入口默认缓存位于 .cache/cargo、.cache/rustup、.cache/mix、.cache/hex、.cache/npm、.cache/go（GOPATH，包括 Go 工具链校验缓存）。共享下载缓存不会合并项目依赖或构建产物；原生 target、Mix _build/deps 和 generated 结果仍属于各项目。CARGO_HOME 是 Cargo 包缓存，RUSTUP_HOME 是工具链目录；Rustup 及其代理命令需预先在 PATH 中可用。setup 使用 --no-self-update，只安装固定工具链，不尝试在项目 CARGO_HOME 更新系统 Rustup。允许显式覆盖这些缓存变量。
 
 [bin/check-bootstrap](bin/check-bootstrap) 接受 all 或单项目：将当前已提交版本克隆到新临时目录，清除缓存环境覆盖，使用新 checkout 的默认空缓存执行 setup 和完整检查。它保留日志和目录、不会删除现有缓存；需要网络、磁盘空间及正常构建时间。未提交的修改不参与此检查。
