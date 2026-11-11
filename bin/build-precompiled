@@ -1,0 +1,42 @@
+#!/bin/sh
+# Export only requested Alpine/musl native artifacts into each project's priv.
+set -eu
+root=$(CDPATH= cd -- "$(dirname -- "$0")/.." && pwd)
+[ "$#" -eq 1 ] || { echo 'Usage: bin/build-precompiled <linux/amd64|linux/arm64|all>' >&2; exit 2; }
+case "$1" in
+  linux/amd64|linux/arm64) platforms=$1 ;;
+  all) platforms='linux/amd64 linux/arm64' ;;
+  *) echo "Unsupported platform: $1" >&2; exit 2 ;;
+esac
+cd "$root"
+# Source submodules must already be present; never download or mutate them here.
+[ -f nifs/parano1d/vendor/parano1d/noid_core/Cargo.toml ] || { echo 'Initialize official Parano1d submodule first' >&2; exit 1; }
+[ -f nifs/tensorcash/vendor/liboqs/CMakeLists.txt ] || { echo 'Initialize official liboqs submodule first' >&2; exit 1; }
+# Record committed inputs; already generated precompiled artifacts are not inputs.
+dirty=$(git status --porcelain --untracked-files=normal -- . ':!nifs/*/priv/precompiled/**')
+[ -z "$dirty" ] || { echo 'Commit source changes before building precompiled artifacts' >&2; printf '%s\n' "$dirty" >&2; exit 1; }
+revision=$(git rev-parse HEAD)
+parano_revision=$(git -C nifs/parano1d/vendor/parano1d rev-parse HEAD)
+oqs_revision=$(git -C nifs/tensorcash/vendor/liboqs rev-parse HEAD)
+mkdir -p .cache
+stage=$(mktemp -d "$root/.cache/precompiled.XXXXXX")
+printf 'Build staging and exported evidence: %s\n' "$stage"
+for platform in $platforms; do
+  case "$platform" in
+    linux/amd64) target=x86_64-unknown-linux-musl ;;
+    linux/arm64) target=aarch64-unknown-linux-musl ;;
+  esac
+  output="$stage/$target"
+  docker buildx build --platform "$platform"     --file docker/precompiled.Dockerfile --target artifacts     --build-arg "SOURCE_REVISION=$revision"     --build-arg "PARANO1D_REVISION=$parano_revision"     --build-arg "LIBOQS_REVISION=$oqs_revision"     --output "type=local,dest=$output" .
+  # Do not copy build trees or BEAM files into the repository.
+  for project in parano1d tensorcash blocknet; do
+    app="${project}_nif"
+    source="$output/nifs/$project/priv/precompiled/$target"
+    destination="$root/nifs/$project/priv/precompiled/$target"
+    test -s "$source/$app.so"
+    test -s "$source/manifest.json"
+    mkdir -p "$destination"
+    cp "$source/$app.so" "$source/manifest.json" "$destination/"
+  done
+  printf 'Exported %s binaries and manifests\n' "$target"
+done

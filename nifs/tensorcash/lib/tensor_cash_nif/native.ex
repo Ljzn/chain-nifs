@@ -1,6 +1,9 @@
 defmodule TensorCashNif.Native do
   @moduledoc false
-  use Rustler, otp_app: :tensorcash_nif, crate: :tensorcash_nif, mode: :release
+  use Rustler,
+      [otp_app: :tensorcash_nif, crate: :tensorcash_nif, mode: :release] ++
+        TensorCashNif.Precompiled.rustler_options!(Path.expand("../..", __DIR__))
+
   def public_key(_seed), do: :erlang.nif_error(:nif_not_loaded)
   def sign(_seed, _digest), do: :erlang.nif_error(:nif_not_loaded)
   def verify(_pk, _digest, _sig), do: :erlang.nif_error(:nif_not_loaded)

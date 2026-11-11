@@ -1,0 +1,17 @@
+.git
+.cache
+.work
+**/.git
+**/deps
+**/_build
+**/target
+**/.cargo-cache
+**/.rustup
+**/.hex-cache
+**/.mix
+**/.npm-cache
+**/node_modules
+**/results/generated
+**/interop/.go-build
+**/interop/.go-mod
+**/priv/native

@@ -1,0 +1,19 @@
+#!/bin/sh
+set -eu
+root=$(CDPATH= cd -- "$(dirname -- "$0")/.." && pwd)
+case "${1:-all}" in
+  all) platforms="linux/amd64 linux/arm64" ;;
+  linux/amd64|linux/arm64) platforms=$1 ;;
+  *) echo "Usage: bin/check-precompiled [all|linux/amd64|linux/arm64]" >&2; exit 2 ;;
+esac
+cd "$root"
+for platform in $platforms; do
+  arch=${platform#linux/}
+  docker buildx build --platform "$platform" --progress plain \
+    -f docker/precompiled-runtime.Dockerfile --target tests .
+  docker buildx build --platform "$platform" --progress plain --load \
+    -f docker/precompiled-runtime.Dockerfile --target runtime \
+    -t "chain-nifs-precompiled-check:$arch" .
+  docker run --rm --network none --platform "$platform" \
+    "chain-nifs-precompiled-check:$arch"
+done

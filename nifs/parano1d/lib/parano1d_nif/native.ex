@@ -1,6 +1,8 @@
 defmodule Parano1dNif.Native do
   @moduledoc false
-  use Rustler, otp_app: :parano1d_nif, crate: :parano1d_nif, mode: :release
+  use Rustler,
+      [otp_app: :parano1d_nif, crate: :parano1d_nif, mode: :release] ++
+        Parano1dNif.Precompiled.rustler_options!(Path.expand("../..", __DIR__))
 
   def proof_busy, do: :erlang.nif_error(:nif_not_loaded)
   def proof_status, do: :erlang.nif_error(:nif_not_loaded)

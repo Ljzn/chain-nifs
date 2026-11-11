@@ -1,6 +1,9 @@
 defmodule BlocknetNif.Native do
   @moduledoc false
-  use Rustler, otp_app: :blocknet_nif, crate: :blocknet_nif, mode: :release
+  use Rustler,
+      [otp_app: :blocknet_nif, crate: :blocknet_nif, mode: :release] ++
+        BlocknetNif.Precompiled.rustler_options!(Path.expand("../..", __DIR__))
+
   def seeded_secret(_seed), do: :erlang.nif_error(:nif_not_loaded)
   def public_key(_secret), do: :erlang.nif_error(:nif_not_loaded)
   def key_image(_secret), do: :erlang.nif_error(:nif_not_loaded)
