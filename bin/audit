@@ -1,0 +1,61 @@
+#!/bin/sh
+set -eu
+root=$(CDPATH= cd -- "$(dirname -- "$0")/.." && pwd)
+cd "$root"
+[ "$#" -le 1 ] || { echo 'Usage: bin/audit [all|parano1d|tensorcash|blocknet]' >&2; exit 2; }
+case "${1:-all}" in
+  all) projects='parano1d tensorcash blocknet' ;;
+  parano1d|tensorcash|blocknet) projects=$1 ;;
+  *) echo "Unknown project: $1" >&2; exit 2 ;;
+esac
+# Resolve tool/DB overrides before the child wrappers change working directory.
+if [ -n "${ADVISORY_DB:-}" ]; then
+  ADVISORY_DB=$(CDPATH= cd -- "$ADVISORY_DB" && pwd) || { echo 'ADVISORY_DB must be an existing checkout' >&2; exit 1; }
+  export ADVISORY_DB
+fi
+cache=${CARGO_HOME:-$root/.cache/cargo}
+case "$cache" in /*) ;; *) cache="$root/$cache" ;; esac
+if [ -n "${CARGO_AUDIT_BIN:-}" ]; then
+  audit_bin=$(command -v "$CARGO_AUDIT_BIN") || { echo 'CARGO_AUDIT_BIN is unavailable' >&2; exit 1; }
+elif [ -x "$cache/bin/cargo-audit" ]; then
+  audit_bin="$cache/bin/cargo-audit"
+else
+  audit_bin=$(command -v cargo-audit) || { echo 'Missing cargo-audit; install it explicitly or set CARGO_AUDIT_BIN' >&2; exit 1; }
+fi
+case "$audit_bin" in /*) ;; *) audit_bin="$root/$audit_bin" ;; esac
+[ -x "$audit_bin" ] || { echo "Audit tool is not executable: $audit_bin" >&2; exit 1; }
+# Blocknet invokes Cargo external-subcommand discovery; it requires this basename.
+[ "${audit_bin##*/}" = cargo-audit ] || { echo 'CARGO_AUDIT_BIN must be an executable named cargo-audit' >&2; exit 1; }
+export CARGO_AUDIT_BIN="$audit_bin"
+export MIX_ENV=test
+status=0
+for project in $projects; do
+  printf 'Audit: %s\n' "$project"
+  case "$project" in
+    parano1d)
+      if bin/run parano1d sh -c '
+        set -eu
+        output=results/generated/audit
+        mkdir -p "$output"
+        status=0
+        "$CARGO_AUDIT_BIN" --version > "$output/cargo-audit-version.txt"
+        if [ -n "${ADVISORY_DB:-}" ]; then
+          git -C "$ADVISORY_DB" log -1 --format="%H %cI" > "$output/advisory-db-revision.txt" || status=1
+          "$CARGO_AUDIT_BIN" audit --file native/parano1d_nif/Cargo.lock --db "$ADVISORY_DB" --no-fetch --json > "$output/cargo-audit.json" || status=1
+        else
+          "$CARGO_AUDIT_BIN" audit --file native/parano1d_nif/Cargo.lock --json > "$output/cargo-audit.json" || status=1
+        fi
+        mix hex.audit > "$output/hex-audit.txt" 2>&1 || status=1
+        exit "$status"
+      '; then :; else status=1; fi
+      ;;
+    tensorcash|blocknet)
+      if bin/run "$project" sh -c '
+        set -eu
+        export PATH="$(dirname -- "$CARGO_AUDIT_BIN"):$PATH"
+        exec bin/audit
+      '; then :; else status=1; fi
+      ;;
+  esac
+done
+exit "$status"

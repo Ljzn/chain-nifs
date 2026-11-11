@@ -1,0 +1,47 @@
+#!/bin/sh
+set -eu
+root=$(CDPATH= cd -- "$(dirname -- "$0")/.." && pwd)
+cd "$root"
+[ "$#" -le 1 ] || { echo 'Usage: bin/setup [all|parano1d|tensorcash|blocknet]' >&2; exit 2; }
+selector=${1:-all}
+case "$selector" in
+  all) projects='parano1d tensorcash blocknet'; first=parano1d ;;
+  parano1d|tensorcash|blocknet) projects=$selector; first=$selector ;;
+  *) echo "Unknown project: $selector" >&2; exit 2 ;;
+esac
+command -v git >/dev/null 2>&1 || { echo 'Missing tool: git' >&2; exit 1; }
+# Submodules belong to the monorepo root; child wrappers verify the pinned revisions.
+git submodule update --init --recursive
+bin/run "$first" sh -c '
+  set -eu
+  for tool in rustup mix; do
+    command -v "$tool" >/dev/null 2>&1 || { echo "Missing tool: $tool" >&2; exit 1; }
+  done
+  rustup toolchain install 1.96.0 --profile minimal --component rustfmt --component clippy
+  mix local.hex --force
+  mix local.rebar --force
+'
+for project in $projects; do
+  printf 'Setup: %s\n' "$project"
+  bin/run "$project" mix deps.get --check-locked
+  case "$project" in
+    tensorcash)
+      bin/run tensorcash sh -c '
+        set -eu
+        for tool in node npm; do
+          command -v "$tool" >/dev/null 2>&1 || { echo "Missing tool: $tool (Node 22 required)" >&2; exit 1; }
+        done
+        case "$(node --version)" in v22.*) ;; *) echo "Node 22 required; set NODE to its node executable" >&2; exit 1 ;; esac
+        npm --prefix interop ci --ignore-scripts --no-audit --no-fund
+      '
+      ;;
+    blocknet)
+      bin/run blocknet sh -c '
+        set -eu
+        command -v "${GO:-go}" >/dev/null 2>&1 || { echo "Missing tool: Go (GO override supported)" >&2; exit 1; }
+        export GOTOOLCHAIN="${GOTOOLCHAIN:-go1.24.12+auto}"
+        interop/run-go wire < test/fixtures/official_vectors.json > /dev/null
+      '
+      ;;
+  esac
+done

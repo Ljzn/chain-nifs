@@ -1,0 +1,6 @@
+[submodule "parano1d-upstream"]
+	path = nifs/parano1d/vendor/parano1d
+	url = https://git.parano1d.org/ignotusnemo/parano1d.git
+[submodule "liboqs-upstream"]
+	path = nifs/tensorcash/vendor/liboqs
+	url = https://github.com/open-quantum-safe/liboqs.git

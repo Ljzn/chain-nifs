@@ -1,0 +1,54 @@
+name: Chain NIF Linux validation
+on: [push, pull_request, workflow_dispatch]
+permissions:
+  contents: read
+jobs:
+  linux:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 45
+    strategy:
+      fail-fast: false
+      matrix:
+        project: [parano1d, tensorcash, blocknet]
+    name: ${{ matrix.project }} / Linux
+    env:
+      MIX_ENV: test
+      ERL_FLAGS: "+S 2:2"
+      GOTOOLCHAIN: go1.24.12+auto
+    steps:
+      - uses: actions/checkout@d23441a48e516b6c34aea4fa41551a30e30af803 # v6
+        with:
+          fetch-depth: 0
+          submodules: recursive
+          persist-credentials: false
+      - uses: erlef/setup-beam@54075bcc5e249e4758d363f27d099f55d843f124
+        with:
+          otp-version: "27.3.4.19"
+          elixir-version: "1.20.5"
+          version-type: strict
+          install-hex: false
+          install-rebar: false
+      - uses: actions/setup-node@249970729cb0ef3589644e2896645e5dc5ba9c38 # v6
+        if: matrix.project == 'tensorcash'
+        with:
+          node-version: "22"
+      - name: Expose explicitly installed shared audit tools
+        run: echo "$GITHUB_WORKSPACE/.cache/cargo/bin" >> "$GITHUB_PATH"
+      - name: Prepare pinned project tools and locked dependencies
+        run: bin/setup ${{ matrix.project }}
+      - name: Check native code, real NIF and independent interoperability
+        run: bin/check ${{ matrix.project }}
+      - name: Install pinned audit tool and audit locked dependencies
+        run: |
+          bin/run ${{ matrix.project }} cargo install cargo-audit --version 0.22.2 --locked
+          bin/audit ${{ matrix.project }}
+      - name: Preserve project verification and audit evidence
+        if: always()
+        uses: actions/upload-artifact@b7c566a772e6b6bfb58ed0dc250532a479d7789f # v6
+        with:
+          name: ${{ matrix.project }}-linux-validation
+          path: |
+            nifs/${{ matrix.project }}/results/generated/
+            results/generated/
+          if-no-files-found: warn
+          retention-days: 30

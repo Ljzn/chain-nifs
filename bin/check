@@ -1,0 +1,49 @@
+#!/bin/sh
+set -eu
+root=$(CDPATH= cd -- "$(dirname -- "$0")/.." && pwd)
+cd "$root"
+[ "$#" -le 1 ] || { echo 'Usage: bin/check [all|parano1d|tensorcash|blocknet]' >&2; exit 2; }
+case "${1:-all}" in
+  all) projects='parano1d tensorcash blocknet' ;;
+  parano1d|tensorcash|blocknet) projects=$1 ;;
+  *) echo "Unknown project: $1" >&2; exit 2 ;;
+esac
+export MIX_ENV=test
+for project in $projects; do
+  printf 'Check: %s\n' "$project"
+  case "$project" in
+    parano1d)
+      bin/run parano1d sh -c '
+        set -eu
+        cargo fmt --manifest-path native/parano1d_nif/Cargo.toml --check
+        cargo clippy --manifest-path native/parano1d_nif/Cargo.toml --locked --all-targets --no-deps -- -D warnings
+        cargo test --manifest-path native/parano1d_nif/Cargo.toml --locked --lib
+        mix precommit
+        mix compile --force --warnings-as-errors
+        mix test --warnings-as-errors
+      '
+      ;;
+    tensorcash)
+      bin/run tensorcash sh -c '
+        set -eu
+        for tool in node npm; do
+          command -v "$tool" >/dev/null 2>&1 || { echo "Missing tool: $tool (run bin/setup tensorcash)" >&2; exit 1; }
+        done
+        case "$(node --version)" in v22.*) ;; *) echo "Node 22 required; set NODE to its node executable" >&2; exit 1 ;; esac
+        cargo fmt --manifest-path native/tensorcash_nif/Cargo.toml --check
+        cargo clippy --manifest-path native/tensorcash_nif/Cargo.toml --locked --all-targets --no-deps -- -D warnings
+        cargo test --manifest-path native/tensorcash_nif/Cargo.toml --locked --lib
+        mix precommit
+        mix compile --force --warnings-as-errors
+        mix test --warnings-as-errors
+        npm --prefix interop run check
+        mix run --no-compile bench/run.exs
+        npm --prefix interop run --silent crossverify < results/generated/native-sample.json > results/generated/crossverify.json
+        mix run --no-compile bench/crossverify_review.exs
+        npm --prefix interop run --silent crossverify < results/generated/review-payments.json > results/generated/review-crossverify.json
+        mix run --no-compile bench/reload.exs > results/generated/reload.txt
+      '
+      ;;
+    blocknet) bin/run blocknet bin/check ;;
+  esac
+done

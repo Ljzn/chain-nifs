@@ -1,0 +1,31 @@
+#!/bin/sh
+set -eu
+root=$(CDPATH= cd -- "$(dirname -- "$0")/.." && pwd)
+[ "$#" -ge 2 ] || { echo 'Usage: bin/run <parano1d|tensorcash|blocknet> <command> [args...]' >&2; exit 2; }
+project=$1
+shift
+case "$project" in parano1d|tensorcash|blocknet) ;; *) echo "Unknown project: $project" >&2; exit 2 ;; esac
+cd "$root"
+export CARGO_HOME="${CARGO_HOME:-$root/.cache/cargo}"
+export RUSTUP_HOME="${RUSTUP_HOME:-$root/.cache/rustup}"
+export MIX_HOME="${MIX_HOME:-$root/.cache/mix}"
+export HEX_HOME="${HEX_HOME:-$root/.cache/hex}"
+export npm_config_cache="${npm_config_cache:-$root/.cache/npm}"
+# Resolve relative cache overrides at the monorepo root before child wrappers cd.
+case "$CARGO_HOME" in /*) ;; *) CARGO_HOME="$root/$CARGO_HOME" ;; esac
+case "$RUSTUP_HOME" in /*) ;; *) RUSTUP_HOME="$root/$RUSTUP_HOME" ;; esac
+case "$MIX_HOME" in /*) ;; *) MIX_HOME="$root/$MIX_HOME" ;; esac
+case "$HEX_HOME" in /*) ;; *) HEX_HOME="$root/$HEX_HOME" ;; esac
+case "$npm_config_cache" in /*) ;; *) npm_config_cache="$root/$npm_config_cache" ;; esac
+export PATH="$CARGO_HOME/bin:$PATH"
+if [ -n "${NODE:-}" ]; then
+  node_path=$(command -v "$NODE") || { echo 'NODE must name an available Node executable' >&2; exit 1; }
+  case "$node_path" in /*) ;; *) node_path="$root/$node_path" ;; esac
+  [ "${node_path##*/}" = node ] || { echo 'NODE executable must be named node for npm subprocesses' >&2; exit 1; }
+  export NODE="$node_path"
+  export PATH="$(dirname -- "$node_path"):$PATH"
+fi
+# Download caches are shared; compiled native/BEAM state always stays per project.
+unset CARGO_TARGET_DIR MIX_BUILD_PATH MIX_DEPS_PATH
+[ -x "$root/nifs/$project/bin/run" ] || { echo "Missing child wrapper: nifs/$project/bin/run" >&2; exit 1; }
+exec "$root/nifs/$project/bin/run" "$@"

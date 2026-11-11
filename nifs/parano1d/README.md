@@ -1,6 +1,6 @@
 # Parano1d Rustler NIF 验证项目
 
-这是 Alice worktree 中的独立实验项目，验证在 BEAM 内调用官方 Rust 库生成普通 NOID 支付的 V4 所有权证明。没有接入 Venezia 业务流程、生产钱包或广播接口。
+现位于私有 monorepo [Ljzn/chain-nifs](https://github.com/Ljzn/chain-nifs) 的 nifs/parano1d；统一入口及当前 CI 见 [根目录说明](../../README.md)。项目验证在 BEAM 内调用官方 Rust 库生成普通 NOID 支付的 V4 所有权证明。没有接入 Venezia 业务流程、生产钱包或广播接口。
 
 ## 固定来源与构建
 
@@ -13,8 +13,8 @@
 先克隆完整项目，再从项目目录执行：
 
 ```sh
-git clone --recurse-submodules git@github.com:Ljzn/parano1d-nif.git
-cd parano1d-nif
+git clone --recurse-submodules git@github.com:Ljzn/chain-nifs.git
+cd chain-nifs/nifs/parano1d
 # 已有普通 clone 可以补取依赖：
 git submodule update --init --recursive
 ```

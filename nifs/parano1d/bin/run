@@ -2,10 +2,10 @@
 set -eu
 project_dir=$(CDPATH= cd -- "$(dirname -- "$0")/.." && pwd)
 cd "$project_dir"
-export RUSTUP_HOME="$project_dir/.rustup"
-export CARGO_HOME="$project_dir/.cargo-cache"
-export MIX_HOME="${MIX_HOME:-$HOME/.mix}"
-export HEX_HOME="$project_dir/.hex-cache"
+export RUSTUP_HOME="${RUSTUP_HOME:-$project_dir/.rustup}"
+export CARGO_HOME="${CARGO_HOME:-$project_dir/.cargo-cache}"
+export MIX_HOME="${MIX_HOME:-$project_dir/.mix}"
+export HEX_HOME="${HEX_HOME:-$project_dir/.hex-cache}"
 expected=f47f386c842ab60d65b70351b0a5b2729f1d9179
 actual=$(git -C vendor/parano1d rev-parse HEAD)
 if [ "$actual" != "$expected" ]; then
