@@ -17,7 +17,8 @@ bin/run "$first" sh -c '
   for tool in rustup mix; do
     command -v "$tool" >/dev/null 2>&1 || { echo "Missing tool: $tool" >&2; exit 1; }
   done
-  rustup toolchain install 1.96.0 --profile minimal --component rustfmt --component clippy
+  # Install project toolchains without updating the system Rustup manager.
+  rustup toolchain install 1.96.0 --no-self-update --profile minimal --component rustfmt --component clippy
   mix local.hex --force
   mix local.rebar --force
 '

@@ -1,0 +1,28 @@
+#!/bin/sh
+# Real clean-checkout smoke; no deletion of an existing checkout or cache.
+set -eu
+root=$(CDPATH= cd -- "$(dirname -- "$0")/.." && pwd)
+[ "$#" -le 1 ] || { echo "Usage: bin/check-bootstrap [all|parano1d|tensorcash|blocknet]" >&2; exit 2; }
+selector=${1:-all}
+case "$selector" in all|parano1d|tensorcash|blocknet) ;; *) echo "Unknown project: $selector" >&2; exit 2 ;; esac
+mkdir -p "$root/.cache"
+scratch=$(mktemp -d "$root/.cache/bootstrap.XXXXXX")
+printf "Clean checkout and evidence: %s\n" "$scratch"
+# Clone the committed tree, excluding uncommitted edits and old build outputs.
+git clone --no-hardlinks --no-local "$root" "$scratch/repo"
+cd "$scratch/repo"
+unset CARGO_HOME RUSTUP_HOME MIX_HOME HEX_HOME npm_config_cache
+unset CARGO_TARGET_DIR MIX_BUILD_PATH MIX_DEPS_PATH ADVISORY_DB CARGO_AUDIT_BIN
+# Root bin/run selects this checkout's empty default cache for every tool.
+export MIX_ENV=test
+export ERL_FLAGS="${ERL_FLAGS:-+S 2:2}"
+printf "source=%s\nselector=%s\n" "$(git rev-parse HEAD)" "$selector" > "$scratch/revision.txt"
+if ! bin/setup "$selector" > "$scratch/setup.log" 2>&1; then
+  echo "Cold setup failed; inspect $scratch/setup.log" >&2
+  exit 1
+fi
+if ! mix precommit "$selector" > "$scratch/check.log" 2>&1; then
+  echo "Cold check failed; inspect $scratch/check.log" >&2
+  exit 1
+fi
+printf "Cold setup and check passed: %s\n" "$scratch"

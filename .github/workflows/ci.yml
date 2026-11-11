@@ -35,7 +35,16 @@ jobs:
       - name: Expose explicitly installed shared audit tools
         run: echo "$GITHUB_WORKSPACE/.cache/cargo/bin" >> "$GITHUB_PATH"
       - name: Prepare pinned project tools and locked dependencies
-        run: bin/setup ${{ matrix.project }}
+        run: |
+          test ! -e .cache/cargo
+          test ! -e .cache/rustup
+          test ! -e .cache/mix
+          test ! -e .cache/hex
+          unset CARGO_HOME RUSTUP_HOME MIX_HOME HEX_HOME npm_config_cache
+          bin/setup ${{ matrix.project }}
+          for item in CARGO_HOME RUSTUP_HOME MIX_HOME HEX_HOME npm_config_cache; do
+            echo "$item=" >> "$GITHUB_ENV"
+          done
       - name: Check native code, real NIF and independent interoperability
         run: bin/check ${{ matrix.project }}
       - name: Install pinned audit tool and audit locked dependencies

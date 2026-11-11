@@ -43,7 +43,9 @@ bin/run parano1d mix precommit
 
 [bin/run](bin/run) 的第一个参数始终是项目名，后面是要执行的命令；执行目录切换到对应子项目。[bin/setup](bin/setup)、[bin/check](bin/check)、[bin/audit](bin/audit) 接受 all 或一个项目名。独立的 Mix/Cargo/npm lockfile 继续由各项目维护，不在根目录重新解析成统一依赖图。
 
-根入口默认缓存位于 .cache/cargo、.cache/rustup、.cache/mix、.cache/hex、.cache/npm。共享下载缓存不会合并项目依赖或构建产物；原生 target、Mix _build/deps 和 generated 结果仍属于各项目。具体环境覆盖和命令选项以脚本为准。
+根入口默认缓存位于 .cache/cargo、.cache/rustup、.cache/mix、.cache/hex、.cache/npm。共享下载缓存不会合并项目依赖或构建产物；原生 target、Mix _build/deps 和 generated 结果仍属于各项目。CARGO_HOME 是 Cargo 包缓存，RUSTUP_HOME 是工具链目录；Rustup 及其代理命令需预先在 PATH 中可用。setup 使用 --no-self-update，只安装固定工具链，不尝试在项目 CARGO_HOME 更新系统 Rustup。允许显式覆盖这些缓存变量。
+
+[bin/check-bootstrap](bin/check-bootstrap) 接受 all 或单项目：将当前已提交版本克隆到新临时目录，清除缓存环境覆盖，使用新 checkout 的默认空缓存执行 setup 和完整检查。它保留日志和目录、不会删除现有缓存；需要网络、磁盘空间及正常构建时间。未提交的修改不参与此检查。
 
 审计工具必须显式准备；例如：
 
@@ -52,6 +54,8 @@ bin/run blocknet cargo install cargo-audit --version 0.22.2 --locked
 export PATH="$PWD/.cache/cargo/bin:$PATH"
 bin/audit all
 ~~~
+
+如使用已有工具，可显式设置 CARGO_AUDIT_BIN=/绝对路径/cargo-audit；如复用刚更新的 RustSec checkout，可设置 ADVISORY_DB=/绝对路径/advisory-db（此时不自动刷新数据库，应自行记录 git revision 与更新时间）。此前本地验收使用过这些显式覆盖；默认缓存没有审计程序不代表此前报告未执行。
 
 审计入口不把缺工具、数据库访问失败或命令失败当作零漏洞。clear_on_drop 未维护等已知信息性告警必须保留；各项目历史记录中的零已知漏洞不等于无告警，也不等于当前数据库已经复验。
 

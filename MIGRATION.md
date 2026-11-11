@@ -62,6 +62,8 @@ git log -- nifs/blocknet
 
 三个 Mix/Cargo/npm 依赖图、lockfile、原生库名称、API 和测试目录各自保留。迁移不合并 Cargo workspace、不共享一个 Mix deps lock、不替换官方密码学算法。公共下载缓存可复用，但不能把缓存命中当作依赖版本或检查成功证据。
 
+子项目目录保留的 .github/workflows/ci.yml 仅为原仓库历史文件；GitHub 不执行嵌套 workflow。当前唯一生效入口是 [根 matrix CI](.github/workflows/ci.yml)，变更检查流程时应维护根入口。
+
 ## 验收边界
 
 原仓库中已经成功的本地或 Linux CI、review、benchmark、audit 属于原提交的历史证据。迁移后需要在 monorepo 的精确 SHA 上重新执行根入口并验证递归 submodule、三个项目、matrix CI 与 artifact 路径。
