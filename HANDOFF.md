@@ -38,7 +38,7 @@ bin/audit
 
 ## 初始版本验证证据
 
-- 初始已验收实现提交：98d50b9a594e0dc1122047a1d9d2d19a0895cf9c（develop），初始交接 HEAD 为 cf802bd521def3b4fd7f7bf3d8c27aaa6ad1ab94。本轮 review 修复的最终提交与 dirty 状态待主维护者验收后记录。
+- 初始已验收实现提交：98d50b9a594e0dc1122047a1d9d2d19a0895cf9c（develop），初始交接 HEAD 为 cf802bd521def3b4fd7f7bf3d8c27aaa6ad1ab94。本轮已验收修复提交为 a4edde529f762bb6fb2070a1ec089c9db716f443；之后仅补充交接标记，最终 HEAD 见 git log，交付时工作区 clean。
 - 主维护者完整执行 [bin/check](bin/check)，退出码 0；Rust fmt、release clippy -D warnings、原生 release Rust 7 测试、官方 oracle Rust 20 测试和 mix precommit / ExUnit 18 测试均通过。oracle 固定 rand 0.8.8。
 - 前后来源/fixture snapshot 均为 16 项并通过；固定 fixture 的独立 Go/Rust 校验通过。
 - fresh 官方生成数据通过：1 个环签名 case、1 笔 payment；结果在 results/generated/fresh-oracle-crossverify.json。
