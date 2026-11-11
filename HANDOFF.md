@@ -24,13 +24,23 @@ bin/audit all
 
 - 三个来源提交均通过 git merge-base --is-ancestor，历史完整可达；源 SHA 和导入提交见 MIGRATION。
 - 根 .gitmodules 登记两份公开官方源码：Parano1d f47f386c842ab60d65b70351b0a5b2729f1d9179、liboqs 97f6b86b1b6d109cfd43cf276ae39c2e776aed80，均 clean。嵌套注册已移除；本地 reference 加速后已 repack 并清空 alternates，两个模块 fsck --connectivity-only 通过，不依赖原仓库对象库。
-- 真实 bin/setup all exit0；根格式检查、四个 shell 的 sh -n、非法项目/路径选择拒绝均通过。
+- 初次迁移验收的 bin/setup all exit0 使用显式工具链/下载缓存覆盖；它证明迁移路径可构建，不证明默认空缓存首次安装。根格式检查、四个 shell 的 sh -n、非法项目/路径选择拒绝均通过。
 - 真实根 mix precommit exit0，等价于完整 bin/check all；新路径重新编译全部 native/BEAM，未复用旧项目编译产物。仅工具链和下载缓存通过显式环境变量复用。
 - Parano1d：Rust4、ExUnit18，通过 debug Clippy、原生测试、release NIF、force compile/test warnings-as-errors。
 - TensorCash：Rust11、ExUnit33，通过 fmt/Clippy、ML-DSA/JS oracle、native/review payments 交叉验证、reload 压力检查。
 - Blocknet：native Rust10、官方 Rust20、ExUnit23；固定/fresh Rust+Go 交叉验证、16×16、256个变异样本/768调用、前后来源验证全部通过。
 - 根完整日志 .cache/local-check.log 无编译 warning/error。首次审计在 Cargo 尚未填充所有包索引时出现 yank 查询缺项提示；完整构建后通过 bin/audit all 重新收齐最终报告，不掩盖该诊断。
 - 审计保留 Parano1d bincode 与 Blocknet clear_on_drop 的 unmaintained 信息性告警；零已知漏洞不等于无告警。数据库具体 revision、数量及各项目依赖数见实际报告。
+
+## Bootstrap review 响应
+
+Reviewer 记录了默认空缓存初始化失败。本轮独立复现使用全新临时 CARGO_HOME/RUSTUP_HOME 和 Rustup1.27.1，原命令首次安装退出0，因此尚未确认旧失败的完整触发条件，不能声称 red/green。setup 新增 --no-self-update，明确只管理项目工具链、不更新系统Rustup；保留独立缓存，不把工具安装写入用户全局Cargo目录。
+
+新增 bin/check-bootstrap：克隆当前已提交版本到临时目录，清除 Cargo/Rustup/Mix/Hex/npm 缓存覆盖，再按新 checkout 默认空缓存执行 setup 与根 mix precommit。记录 source SHA/setup.log/check.log，不删除现有缓存；依赖主机 PATH 和网络，范围不含 audit。根 CI 每行显式断言四个默认缓存不存在，清除继承的缓存变量，后续步骤也使用空值恢复根默认值。
+
+README 已补 Rustup/proxy/cache 边界和本地审计工具/数据库覆盖方式；MIGRATION 明确子目录 workflow 是历史文件、仅根 workflow 生效。实际冷 checkout 首轮（053be49）通过 Rustup/Hex/npm，但 Go 下载固定工具链时写入全局 GOPATH 校验缓存，被工作区沙箱拒绝；这与 reviewer 的 Rustup 错误不同，作为真实失败证据保留。随后根 bin/run 新增项目 .cache/go 默认 GOPATH，冷启动清除 GOPATH/GOMODCACHE/GOCACHE/RUSTUP_TOOLCHAIN，以新 checkout 重跑。最终源码 e6e50ee324aaa5f09b03326e05ccc7b769b7b082 的新 checkout 默认空缓存 setup 全部成功。本地首次完整检查在 TensorCash release 库生成后 Mix 长期无输出，已停止保留日志；随后同一个冷 checkout/default-cache、未切换旧环境，重新执行根 mix precommit 退出0（Parano18/Tensor33/Block23 ExUnit，Rust4/11/10+官方20，全部互操作与变异检查）。同一默认环境重复 bin/setup all 也退出0，幂等性检查通过，checkout clean。不把被停止的 helper 记作端到端一次性通过。系统Rustup文件SHA256验证前后均760b18611021deee1a859c345d17200e0087d47f68dfe58278c57abe3a0d3dd0。
+
+最终空缓存三行Linuxmatrix全部success：[run43000502219](https://github.com/Ljzn/chain-nifs/actions/runs/43000502219)，精确headSHA为e6e50ee。每行setup/check/audit/artifact通过，三份artifact已下载复核。RustSec1453条，revision31cf5a8673e10d3a4d7d829ad5095f47ed419049；native依赖44/59/61及Blockoracle61，0已知漏洞、ignore=[]，保留bincode/clear_on_drop未维护告警。
 
 ## Linux 与发布追溯
 
