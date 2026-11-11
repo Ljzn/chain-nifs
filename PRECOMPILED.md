@@ -72,6 +72,11 @@ nifs/PROJECT/priv/precompiled/TARGET/manifest.json
 TensorCash, for example, exports tensorcash_nif.so. No BEAM modules, source,
 compiler or caches are exported. Later the consuming Mix release compiles
 Elixir wrappers and packages the checked binaries in the application's priv.
+ELF DT_NEEDED inspection of the shipped six libraries finds only libgcc_s.so.1
+and the architecture-specific musl libc. Keep Alpine libgcc installed; no separate
+liboqs or OpenSSL library is required by these NIFs themselves. The BEAM release
+and other application dependencies retain their own runtime requirements.
+
 Go and Node are unnecessary for binary generation; independent oracle checks
 remain separate validation gates.
 
