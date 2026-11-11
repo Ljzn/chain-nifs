@@ -1,8 +1,10 @@
 # Blocknet RingCT NIF 原型
 
+GitHub：[Ljzn/blocknet-nif](https://github.com/Ljzn/blocknet-nif)（私有），默认分支 develop。[Linux CI](https://github.com/Ljzn/blocknet-nif/actions/workflows/ci.yml) 按对应提交提供验证记录。
+
 面向 Blocknet 当前椭圆曲线交易格式的 Elixir/Rustler 实验项目。基线为官方 core d4c7f78572e5dd637e7f322ea89573b65912e64c；实现 Ristretto255 环签名、Pedersen 承诺、单输出 Bulletproofs，以及 version 1 indexed stealth 支付构造与恢复。本项目不包含矿工或 Faraday 后量子证明。
 
-本轮 review 修复已通过本地完整 bin/check：原生 Rust 10 测试、ExUnit 23 测试、官方 oracle Rust 20 测试、fmt/clippy、warnings-as-errors、固定及 fresh 数据交叉验证均通过，包含 16×16 支付。另有 256 个有界变异样本、768 次直接 NIF 调用检查；这不是覆盖率导向 fuzz 或 sanitizer。修复证据、平台历史实测和审计告警见 [HANDOFF.md](HANDOFF.md)。尚无 Linux CI 成功记录。源码依据与第三方许可见 [THIRD_PARTY.md](THIRD_PARTY.md)。
+本轮 review 修复已通过本地完整 bin/check：原生 Rust 10 测试、ExUnit 23 测试、官方 oracle Rust 20 测试、fmt/clippy、warnings-as-errors、固定及 fresh 数据交叉验证均通过，包含 16×16 支付。另有 256 个有界变异样本、768 次直接 NIF 调用检查；这不是覆盖率导向 fuzz 或 sanitizer。修复证据、平台历史实测和审计告警见 [HANDOFF.md](HANDOFF.md)。Linux CI 的最新结果以 GitHub Actions 对应提交为准。源码依据与第三方许可见 [THIRD_PARTY.md](THIRD_PARTY.md)。
 
 ## 范围与限制
 

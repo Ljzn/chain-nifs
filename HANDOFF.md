@@ -2,7 +2,7 @@
 
 ## 当前状态
 
-当前仅本地实验仓库，尚未发布 GitHub，未执行节点广播。CI 配置是未来 Linux 检查入口，不代表已有 GitHub Actions 成功记录。
+用户已授权发布为 GitHub 私有仓库：[Ljzn/blocknet-nif](https://github.com/Ljzn/blocknet-nif)，默认分支 develop，未执行节点广播。[Linux CI](https://github.com/Ljzn/blocknet-nif/actions/workflows/ci.yml) 结果以对应提交的 GitHub Actions 记录为准；下方初始版本与 review 验收章节保留发布前的本地历史证据。
 
 官方基线：blocknetprivacy/core d4c7f78572e5dd637e7f322ea89573b65912e64c。许可：BSD-3-Clause，见 [LICENSE](LICENSE)、[NOTICE](NOTICE)、[THIRD_PARTY.md](THIRD_PARTY.md)。
 
