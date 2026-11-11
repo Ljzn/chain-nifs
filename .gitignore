@@ -1,0 +1,13 @@
+**/_build/
+**/deps/
+**/priv/native/
+**/.cargo-cache/
+**/.rustup/
+**/.hex-cache/
+**/.mix/
+**/.npm-cache/
+**/node_modules/
+**/target/
+**/results/generated/
+/.cache/
+/.work/
