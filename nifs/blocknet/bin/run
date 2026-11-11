@@ -1,0 +1,9 @@
+#!/bin/sh
+set -eu
+project_dir=$(CDPATH= cd -- "$(dirname -- "$0")/.." && pwd)
+cd "$project_dir"
+export RUSTUP_HOME="${RUSTUP_HOME:-$project_dir/.rustup}"
+export CARGO_HOME="${CARGO_HOME:-$project_dir/.cargo-cache}"
+export MIX_HOME="${MIX_HOME:-$project_dir/.mix}"
+export HEX_HOME="${HEX_HOME:-$project_dir/.hex-cache}"
+exec "$@"

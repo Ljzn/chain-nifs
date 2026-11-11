@@ -1,0 +1,68 @@
+{
+  "baseline": "cf802bd521def3b4fd7f7bf3d8c27aaa6ad1ab94",
+  "date": "2026-11-11",
+  "platform": "macOS ARM64 / Apple M2",
+  "scope": "local Blocknet RingCT review fixes",
+  "red": {
+    "real_nif_regressions": 5,
+    "passed": 2,
+    "failed": 3,
+    "failures": [
+      "signed inconsistent opening aborts other owned outputs",
+      "valid zero opening rejected",
+      "duplicate decoy public keys accepted"
+    ]
+  },
+  "green": {
+    "native_rust_tests": 10,
+    "official_rust_tests": 20,
+    "exunit_tests": 23,
+    "focused_real_nif_regressions": 5,
+    "full_check_exit": 0,
+    "strict_compile_and_test_warnings": true,
+    "benchmark_warning_count": 0,
+    "provenance_entries": 16,
+    "fresh_official": {
+      "cases": 1,
+      "payments": 1
+    },
+    "fresh_native": {
+      "cases": 1,
+      "payments": 4,
+      "shapes": [
+        "1x2",
+        "2x2",
+        "16x2",
+        "16x16"
+      ]
+    },
+    "final_strengthened_mutation": {
+      "cases": 256,
+      "nif_calls": 768,
+      "seed": 20261111,
+      "exit": 0,
+      "coverage_guided": false,
+      "sanitizer": false
+    },
+    "post_mutation_precommit_exit": 0
+  },
+  "audit": {
+    "tool": "cargo-audit 0.22.2",
+    "native_dependencies": 61,
+    "oracle_dependencies": 61,
+    "known_vulnerabilities": 0,
+    "ignore": [],
+    "warnings": [
+      "RUSTSEC-2026-0283: clear_on_drop 0.2.5 unmaintained via bulletproofs 5"
+    ],
+    "advisory_db_commit": "28d73fc95e5972af3403225a217def57dcaba3c4",
+    "advisory_count": 1446,
+    "hex": "No retired or security advisory packages"
+  },
+  "limitations": [
+    "Linux remote CI not run",
+    "No sanitizer, Miri, coverage-guided fuzz, or long soak",
+    "Partial secret zeroization; unchanged production security limitations",
+    "Independent static review is not a complete cryptographic audit"
+  ]
+}

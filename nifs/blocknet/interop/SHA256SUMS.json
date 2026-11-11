@@ -1,0 +1,112 @@
+{
+  "upstream_commit": "d4c7f78572e5dd637e7f322ea89573b65912e64c",
+  "entries": [
+    {
+      "source": "crypto-rs/src/ring.rs",
+      "copy": "interop/official-rust/src/upstream/ring.rs",
+      "sha256": "1dc489cbf0f1c9ca483e4f4d39682f0ac2c08af5d6cd67e6ea77212d77203775",
+      "kind": "exact-file"
+    },
+    {
+      "source": "crypto-rs/src/keys.rs",
+      "copy": "interop/official-rust/src/upstream/keys.rs",
+      "sha256": "5dba15e05b51bccc48dee7d085e5a73e9cf9bbb70e9d68472063d22f3439b741",
+      "kind": "exact-file"
+    },
+    {
+      "source": "crypto-rs/src/stealth.rs",
+      "copy": "interop/official-rust/src/upstream/stealth.rs",
+      "sha256": "b5838215eb936a46aeee2e887ccd123f258570c6019dd959b9f8f596cbdb8fc3",
+      "kind": "exact-file"
+    },
+    {
+      "source": "crypto-rs/src/commitment.rs",
+      "copy": "interop/official-rust/src/upstream/commitment.rs",
+      "sha256": "1bc56831263c5b9ac3ff36a84ae60cc39375608cd818f146915e802e0ae13a6c",
+      "kind": "exact-file"
+    },
+    {
+      "source": "crypto-rs/src/rangeproof.rs",
+      "copy": "interop/official-rust/src/upstream/rangeproof.rs",
+      "sha256": "b46506b8d8ca46589b010a280ae1a77b44367e6ae6bfef72bd384048e5c871a2",
+      "kind": "exact-file"
+    },
+    {
+      "source": "wallet/memo.go",
+      "copy": "interop/official-go/wallet/memo.go",
+      "sha256": "2479de3dd0f4375337e7d685c8785010e593446fa84d58b584a6ec022a2a7a38",
+      "kind": "exact-file"
+    },
+    {
+      "source": "protocol/params/memo.go",
+      "copy": "interop/official-go/protocol/params/memo.go",
+      "sha256": "609f4e47f14fc436155f2fe4d4189f85ad6399ad00f6e1f70f247c75a9828582",
+      "kind": "exact-file"
+    },
+    {
+      "source": "protocol/params/network.go",
+      "copy": "interop/official-go/protocol/params/network.go",
+      "sha256": "9f4ac7889e3414b31302b39202b0e394b724a8c798ce538a8906e57101e724e8",
+      "kind": "exact-file"
+    },
+    {
+      "source": "protocol/params/p2p.go",
+      "copy": "interop/official-go/protocol/params/p2p.go",
+      "sha256": "43fa58bec62b5b45947049c65b7e408d0d6f3b69bea1e54f50e4ad6f3a00ce40",
+      "kind": "exact-file"
+    },
+    {
+      "source": "wallet/scanner.go",
+      "source_lines": [
+        431,
+        448
+      ],
+      "copy": "interop/official-go/wallet/blinding.go",
+      "sha256": "e01d2878b1424273d4aa1d05abfcec8c094c323c45c650b6a5a643f2ec486a03",
+      "source_extract_sha256": "8d604293526c0e17ca34b26ee0a1a3f733fd77c460456ee2f19ce39700468efc",
+      "kind": "exact-function-extract-with-local-package-import-preamble"
+    },
+    {
+      "source": "wallet/builder.go",
+      "source_lines": [
+        696,
+        733
+      ],
+      "copy": "interop/official-go/wallet/amount.go",
+      "sha256": "128ad46fd51a4660bfdea52cd7e6c1aae85fc306365b8977a8d278d00e2fd758",
+      "source_extract_sha256": "af6ec097f26cee35d4d31beccfcbf480eb8a14bdaf41fd7baa657666ecd1a247",
+      "kind": "exact-function-extract-with-local-package-import-preamble"
+    },
+    {
+      "source": "wallet/mnemonic.go",
+      "source_lines": [
+        157,
+        186
+      ],
+      "copy": "interop/official-go/wallet/seed.go",
+      "sha256": "c080c9587371c8e7fcaed446deaf901b72f19e1fbf61356aa75a883f9ede9f95",
+      "source_extract_sha256": "78130f187f7abaaa09aca6883779f7c85d76f184597f5afa9f13a9e9dee643c8",
+      "kind": "exact-function-extract-with-local-package-import-preamble"
+    },
+    {
+      "copy": "interop/official-rust/LICENSE.upstream",
+      "sha256": "47eb78a8a1d00990787c7f3918e8cf6b5d609ba6214815a2582eca83e2533688",
+      "kind": "license-or-generated-artifact"
+    },
+    {
+      "copy": "interop/official-rust/Cargo.toml",
+      "sha256": "593406a50c03a7e0775ccffd03039059005519b480bc7d51022a8d6d53f69489",
+      "kind": "license-or-generated-artifact"
+    },
+    {
+      "copy": "interop/official-rust/Cargo.lock",
+      "sha256": "60c37dc2d19ca5cb84fd34a8af060e45a2ad8b70a99e920d59e994f9d0141749",
+      "kind": "license-or-generated-artifact"
+    },
+    {
+      "copy": "test/fixtures/official_vectors.json",
+      "sha256": "55f35b6eb098a0ec6b25e7cab3c001929ab8c4100fcb3eb46ff24bc235b95f89",
+      "kind": "license-or-generated-artifact"
+    }
+  ]
+}

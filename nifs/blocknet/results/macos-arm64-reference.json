@@ -1,0 +1,167 @@
+{
+  "unit": "milliseconds",
+  "iterations": 3,
+  "measurements": [
+    {
+      "name": "ring_sign/16",
+      "iterations": 3,
+      "samples_ms": [
+        8.024,
+        8.039,
+        8.033
+      ],
+      "median_ms": 8.033
+    },
+    {
+      "name": "ring_verify/16",
+      "iterations": 3,
+      "samples_ms": [
+        4.042,
+        3.978,
+        3.975
+      ],
+      "median_ms": 3.978
+    },
+    {
+      "name": "range_prove/64bit",
+      "iterations": 3,
+      "samples_ms": [
+        13.997,
+        13.973,
+        14.012
+      ],
+      "median_ms": 13.997
+    },
+    {
+      "name": "range_verify/64bit",
+      "iterations": 3,
+      "samples_ms": [
+        3.183,
+        3.208,
+        3.177
+      ],
+      "median_ms": 3.183
+    },
+    {
+      "name": "build/1x2",
+      "bytes": 4017,
+      "iterations": 3,
+      "samples_ms": [
+        47.907,
+        47.683,
+        48.017
+      ],
+      "median_ms": 47.907
+    },
+    {
+      "name": "verify/1x2",
+      "iterations": 3,
+      "samples_ms": [
+        10.625,
+        10.567,
+        10.57
+      ],
+      "median_ms": 10.57
+    },
+    {
+      "name": "receive/1x2",
+      "iterations": 3,
+      "samples_ms": [
+        11.002,
+        10.978,
+        10.946
+      ],
+      "median_ms": 10.978
+    },
+    {
+      "name": "build/2x2",
+      "bytes": 6233,
+      "iterations": 3,
+      "samples_ms": [
+        59.186,
+        60.393,
+        63.6
+      ],
+      "median_ms": 60.393
+    },
+    {
+      "name": "verify/2x2",
+      "iterations": 3,
+      "samples_ms": [
+        14.481,
+        14.484,
+        14.462
+      ],
+      "median_ms": 14.481
+    },
+    {
+      "name": "receive/2x2",
+      "iterations": 3,
+      "samples_ms": [
+        14.855,
+        14.958,
+        14.894
+      ],
+      "median_ms": 14.894
+    },
+    {
+      "name": "build/16x2",
+      "bytes": 37257,
+      "iterations": 3,
+      "samples_ms": [
+        233.991,
+        233.665,
+        234.322
+      ],
+      "median_ms": 233.991
+    },
+    {
+      "name": "verify/16x2",
+      "iterations": 3,
+      "samples_ms": [
+        71.823,
+        71.344,
+        71.657
+      ],
+      "median_ms": 71.657
+    },
+    {
+      "name": "receive/16x2",
+      "iterations": 3,
+      "samples_ms": [
+        71.954,
+        71.935,
+        74.307
+      ],
+      "median_ms": 71.954
+    },
+    {
+      "name": "build/16x16",
+      "bytes": 49521,
+      "iterations": 1,
+      "samples_ms": [
+        470.706
+      ],
+      "median_ms": 470.706
+    },
+    {
+      "name": "verify/16x16",
+      "iterations": 1,
+      "samples_ms": [
+        114.95
+      ],
+      "median_ms": 114.95
+    },
+    {
+      "name": "receive/16x16",
+      "iterations": 1,
+      "samples_ms": [
+        117.38
+      ],
+      "median_ms": 117.38
+    }
+  ],
+  "synthetic_only": true,
+  "clock": "System.monotonic_time",
+  "max_case_enabled": true
+}

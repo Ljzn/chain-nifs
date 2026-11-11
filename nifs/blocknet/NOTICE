@@ -1,0 +1,17 @@
+Blocknet RingCT NIF experimental prototype
+Copyright (c) 2026, Blocknet NIF prototype contributors
+
+This project contains source adaptations and copies from Blocknet core:
+https://github.com/blocknetprivacy/core
+Revision: d4c7f78572e5dd637e7f322ea89573b65912e64c
+Copyright (c) 2026, Blocknet
+Licensed under the BSD 3-Clause License; see LICENSE.
+
+The prototype adapts the RingCT, commitment, range proof, stealth, wallet
+seed, payment, amount encryption and memo rules. Interoperability oracles
+retain exact upstream files and extracted functions with manifest hashes.
+The complete unchanged upstream license is also retained at
+interop/official-rust/LICENSE.upstream.
+
+This prototype is not an official Blocknet release or endorsement.
+Third-party packages retain their own licenses; see THIRD_PARTY.md.

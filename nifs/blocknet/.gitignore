@@ -1,0 +1,9 @@
+/_build/
+/deps/
+/priv/native/
+/.cargo-cache/
+/.rustup/
+/.hex-cache/
+/.mix/
+**/target/
+/results/generated/

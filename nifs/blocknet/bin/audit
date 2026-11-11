@@ -1,0 +1,53 @@
+#!/bin/sh
+set -eu
+root=$(CDPATH= cd -- "$(dirname -- "$0")/.." && pwd)
+cd "$root"
+output=results/generated/audit
+mkdir -p "$output"
+status=0
+# Never install tools implicitly or suppress tool/update/advisory failures.
+audit_one() {
+  if [ -n "${ADVISORY_DB:-}" ]; then
+    bin/run cargo audit --db "$ADVISORY_DB" --no-fetch --file "$1" --json
+  else
+    bin/run cargo audit --file "$1" --json
+  fi
+}
+if [ -n "${ADVISORY_DB:-}" ]; then
+  printf '%s\n' "$ADVISORY_DB" > "$output/advisory-db-path.txt"
+  if git -C "$ADVISORY_DB" log -1 --format='%H %cI' > "$output/advisory-db-revision.txt" 2>&1; then
+    :
+  else
+    status=1
+  fi
+fi
+if bin/run cargo audit --version > "$output/cargo-audit-version.txt" 2>&1; then
+  if audit_one native/blocknet_nif/Cargo.lock > "$output/native.json" 2> "$output/native.stderr"; then
+    :
+  else
+    status=1
+  fi
+  if audit_one interop/official-rust/Cargo.lock > "$output/oracle.json" 2> "$output/oracle.stderr"; then
+    :
+  else
+    status=1
+  fi
+else
+  printf '%s\n' 'cargo-audit unavailable; install explicitly into project CARGO_HOME before auditing.' >&2
+  status=1
+fi
+if bin/run mix help hex.audit > "$output/hex-audit-help.txt" 2>&1; then
+  if bin/run mix hex.audit > "$output/hex.txt" 2>&1; then
+    :
+  else
+    status=1
+  fi
+else
+  printf '%s\n' 'Hex audit unavailable; prepare Hex explicitly before auditing.' >&2
+  status=1
+fi
+printf '%s\n' "$status" > "$output/exit-status.txt"
+if [ "$status" -ne 0 ]; then
+  printf '%s\n' "Audit incomplete or failed; inspect $output." >&2
+fi
+exit "$status"
