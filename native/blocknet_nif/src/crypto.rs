@@ -70,8 +70,15 @@ fn blinding(bytes: &[u8]) -> Result<Zeroizing<Scalar>, String> {
 // effort: Scalar is Copy and library/compiler temporaries and StdRng state may
 // retain copies; Zeroizing does not promise complete memory erasure.
 fn fresh_rng() -> Result<StdRng, String> {
+    fresh_rng_with_entropy(getrandom::getrandom)
+}
+
+// The adapter is private and replaces only the fallible OS boundary in tests.
+fn fresh_rng_with_entropy(
+    mut entropy: impl FnMut(&mut [u8]) -> Result<(), getrandom::Error>,
+) -> Result<StdRng, String> {
     let mut seed = Zeroizing::new([0u8; 32]);
-    getrandom::getrandom(&mut seed[..]).map_err(|e| format!("OS entropy failed: {e}"))?;
+    entropy(&mut seed[..]).map_err(|e| format!("OS entropy failed: {e}"))?;
     Ok(StdRng::from_seed(*seed))
 }
 
@@ -130,8 +137,16 @@ pub fn key_image(secret: &[u8]) -> Result<[u8; 32], String> {
 }
 
 pub fn range_prove(amount: u64, blind: &[u8]) -> Result<Vec<u8>, String> {
+    range_prove_with_entropy(amount, blind, getrandom::getrandom)
+}
+
+fn range_prove_with_entropy(
+    amount: u64,
+    blind: &[u8],
+    entropy: impl FnMut(&mut [u8]) -> Result<(), getrandom::Error>,
+) -> Result<Vec<u8>, String> {
     let r = blinding(blind)?;
-    let mut rng = fresh_rng()?;
+    let mut rng = fresh_rng_with_entropy(entropy)?;
     let (proof, _) = RangeProof::prove_single_with_rng(
         &BulletproofGens::new(64, 1),
         &PedersenGens::default(),
@@ -150,12 +165,22 @@ pub fn range_prove(amount: u64, blind: &[u8]) -> Result<Vec<u8>, String> {
 }
 
 pub fn range_verify(commitment: &[u8], proof: &[u8]) -> Result<bool, String> {
+    range_verify_with_entropy(commitment, proof, getrandom::getrandom)
+}
+
+fn range_verify_with_entropy(
+    commitment: &[u8],
+    proof: &[u8],
+    entropy: impl FnMut(&mut [u8]) -> Result<(), getrandom::Error>,
+) -> Result<bool, String> {
     let c = point(commitment)?.compress();
     if proof.len() > 1024 {
         return Err("range proof exceeds 1024 bytes".to_owned());
     }
     let proof = RangeProof::from_bytes(proof).map_err(|e| format!("invalid range proof: {e}"))?;
-    let mut rng = fresh_rng()?;
+    // Even a single proof batches verification equations with a random scalar.
+    // Keep verifier randomness; do not replace it with a fixed deterministic RNG.
+    let mut rng = fresh_rng_with_entropy(entropy)?;
     Ok(proof
         .verify_single_with_rng(
             &BulletproofGens::new(64, 1),

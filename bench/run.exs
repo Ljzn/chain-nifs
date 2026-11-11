@@ -1,7 +1,9 @@
 # Run after compiling: mix run bench/run.exs
 # BLOCKNET_BENCH_MAX=1 includes one costly 16-input/16-output build and export.
 # Every key and UTXO below is synthetic and has no chain provenance.
-Code.require_file("../test/support/synthetic.ex", __DIR__)
+unless Code.ensure_loaded?(BlocknetNif.Synthetic) do
+  Code.require_file("../test/support/synthetic.ex", __DIR__)
+end
 
 defmodule BlocknetNif.Bench do
   alias BlocknetNif, as: N

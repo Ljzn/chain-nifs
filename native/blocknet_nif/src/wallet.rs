@@ -380,8 +380,11 @@ pub fn receive(
             amount_bytes[j] ^= mask[j];
         }
         let amount = u64::from_le_bytes(*amount_bytes);
-        if amount == 0 || crate::crypto::commitment(amount, blind.as_bytes())? != o.commitment {
-            return Err("owned output opening is invalid".into());
+        if crate::crypto::commitment(amount, blind.as_bytes())? != o.commitment {
+            // A sender can sign inconsistent amount ciphertext. Like the official scanner,
+            // skip only that output; retain valid outputs on either side of it. Zero is
+            // recoverable when its opening matches, even though our builder sends > 0.
+            continue;
         }
         // Like the official scanner, retain owned funds even if the memo is invalid.
         // The network domain affects memo decoding, not ownership or amount recovery.
@@ -392,7 +395,7 @@ pub fn receive(
         let memo = Zeroizing::new(payload);
         let key = Zeroizing::new(*shared + *spend);
         if *key == Scalar::ZERO {
-            return Err("owned output has zero secret".into());
+            continue;
         }
         found.push(Received {
             index,
@@ -457,8 +460,15 @@ fn prepare_input(input: &Input) -> Result<PreparedInput, String> {
         .iter()
         .map(|s| hex32(s))
         .collect::<Result<Vec<_>, _>>()?;
+    // Wallet construction policy: repeated public keys reduce the effective anonymity set.
+    // Compare decoded bytes so alternate hex casing cannot bypass the check. Do not impose
+    // commitment uniqueness or change the protocol-level parser/verifier acceptance rules.
+    let mut seen = std::collections::HashSet::with_capacity(RING_SIZE);
     for k in &keys {
         nonidentity(k)?;
+        if !seen.insert(*k) {
+            return Err("duplicate ring public key".into());
+        }
     }
     for c in &commitments {
         point(c)?;
@@ -659,11 +669,29 @@ mod tests {
         )
         .is_err());
         let mut input = prepared(1, 10, 0);
-        input.ring_keys[0] = input.ring_keys[1].clone();
-        assert!(prepare_input(&input).is_err());
+        input.ring_keys[0] =
+            hex::encode(crate::crypto::public_key(Scalar::from(9000u64).as_bytes()).unwrap());
+        assert!(
+            matches!(prepare_input(&input), Err(e) if e == "input secret does not match real ring key")
+        );
         let mut input = prepared(1, 10, 0);
         input.ring_commitments[0] = input.ring_commitments[1].clone();
-        assert!(prepare_input(&input).is_err());
+        assert!(
+            matches!(prepare_input(&input), Err(e) if e == "input opening does not match real ring commitment")
+        );
+    }
+
+    #[test]
+    fn duplicate_decoy_keys_are_rejected_by_wallet_construction() {
+        let mut input = prepared(1, 10, 0);
+        // Keep real index 0 intact; duplicate decoys only, including alternate hex case.
+        input.ring_keys[2] = input.ring_keys[1].to_uppercase();
+        assert!(matches!(prepare_input(&input), Err(e) if e == "duplicate ring public key"));
+        input.ring_commitments[2] = input.ring_commitments[1].clone();
+        assert!(matches!(prepare_input(&input), Err(e) if e == "duplicate ring public key"));
+        let mut input = prepared(1, 10, 0);
+        input.ring_commitments[2] = input.ring_commitments[1].clone();
+        assert!(prepare_input(&input).is_ok());
     }
 
     #[test]

@@ -121,6 +121,39 @@ defmodule BlocknetNif.Synthetic do
     replace(raw, offset, <<Bitwise.bxor(byte, 1)>>)
   end
 
+  # Re-sign a caller-edited, one-input wire transaction using its original output blindings.
+  # Used only for adversarial synthetic fixtures: mutations must pass full verification.
+  def resign_single_input(raw, prepared, received) do
+    [input] = prepared.inputs
+    [offset] = wire_layout(raw).inputs
+    order = Integer.pow(2, 252) + 27_742_317_777_372_353_535_851_937_790_883_648_493
+
+    sum =
+      Enum.reduce(received, 0, fn o, acc ->
+        acc + :binary.decode_unsigned(unhex(o.blinding_hex), :little)
+      end)
+
+    pseudo_blind = <<rem(sum, order)::little-unsigned-size(256)>>
+    message = :crypto.hash(:sha3_256, binary_part(raw, 0, offset))
+    keys = Enum.map_join(input.ring_keys, &unhex/1)
+    commitments = Enum.map_join(input.ring_commitments, &unhex/1)
+    raw = raw |> replace(offset + 68, keys) |> replace(offset + 580, commitments)
+
+    {:ok, signature} =
+      N.ring_sign(
+        input.ring_keys,
+        input.ring_commitments,
+        input.real_index,
+        unhex(input.secret_hex),
+        unhex(input.blinding_hex),
+        binary_part(raw, offset + 32, 32),
+        pseudo_blind,
+        message
+      )
+
+    replace(raw, offset + 1096, signature)
+  end
+
   def wire_layout(raw) do
     <<1, _public::binary-size(32), ni::little-32, no::little-32, _fee::little-64, _::binary>> =
       raw

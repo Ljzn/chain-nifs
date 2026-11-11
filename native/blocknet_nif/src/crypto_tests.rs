@@ -167,6 +167,43 @@ fn scalar_point_and_blinding_boundaries() {
 }
 
 #[test]
+fn range_proof_entropy_failure_is_an_error() {
+    let blind = [255; 32];
+    let proof = range_prove(42, &blind).unwrap();
+    let c = commitment(42, &blind).unwrap();
+    // Start with a valid, parseable proof: this exercises the entropy failure
+    // after validation, rather than rejecting malformed input before the OS call.
+    assert!(range_verify(&c, &proof).unwrap());
+    let failure = getrandom::Error::UNSUPPORTED;
+    let expected = format!("OS entropy failed: {failure}");
+    let mut calls = 0;
+    let result = range_verify_with_entropy(&c, &proof, |seed| {
+        calls += 1;
+        assert_eq!(seed.len(), 32);
+        Err(failure)
+    });
+    assert_eq!(calls, 1);
+    assert_eq!(result, Err(expected.clone()));
+    assert_eq!(
+        range_prove_with_entropy(42, &blind, |_| Err(failure)),
+        Err(expected.clone())
+    );
+    assert_eq!(
+        fresh_rng_with_entropy(|_| Err(failure)).err(),
+        Some(expected)
+    );
+}
+
+#[test]
+fn malformed_range_proof_does_not_request_entropy() {
+    let c = commitment(42, &[255; 32]).unwrap();
+    let result = range_verify_with_entropy(&c, &[], |_| {
+        panic!("malformed proof must be rejected before requesting entropy")
+    });
+    assert!(result.unwrap_err().starts_with("invalid range proof:"));
+}
+
+#[test]
 fn range_proof_roundtrip_and_bounds() {
     let blind = [255; 32];
     let proof = range_prove(42, &blind).unwrap();

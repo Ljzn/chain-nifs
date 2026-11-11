@@ -3,7 +3,8 @@ set -eu
 root=$(CDPATH= cd -- "$(dirname -- "$0")/.." && pwd)
 cd "$root"
 mkdir -p results/generated
-export MIX_ENV="${MIX_ENV:-test}"
+# Always include test/support in the forced warning-as-error compilation gate.
+export MIX_ENV=test
 manifest=native/blocknet_nif/Cargo.toml
 bin/run python3 interop/verify_provenance.py > results/generated/provenance-before.json
 bin/run cargo fmt --manifest-path "$manifest" --check
@@ -16,4 +17,5 @@ bin/run interop/run-rust generate > results/generated/fresh-oracle.json
 bin/run python3 interop/cross_verify.py results/generated/fresh-oracle.json > results/generated/fresh-oracle-crossverify.json
 BLOCKNET_BENCH_MAX=1 bin/run mix run --no-compile bench/run.exs > results/generated/benchmark.txt
 bin/run python3 interop/cross_verify.py results/generated/native-sample.json > results/generated/native-crossverify.json
+bin/fuzz > results/generated/fuzz.json
 bin/run python3 interop/verify_provenance.py > results/generated/provenance-after.json
