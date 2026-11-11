@@ -11,6 +11,7 @@ export RUSTUP_HOME="${RUSTUP_HOME:-$root/.cache/rustup}"
 export MIX_HOME="${MIX_HOME:-$root/.cache/mix}"
 export HEX_HOME="${HEX_HOME:-$root/.cache/hex}"
 export npm_config_cache="${npm_config_cache:-$root/.cache/npm}"
+export GOPATH="${GOPATH:-$root/.cache/go}"
 # Resolve relative cache overrides at the monorepo root before child wrappers cd.
 case "$CARGO_HOME" in /*) ;; *) CARGO_HOME="$root/$CARGO_HOME" ;; esac
 case "$RUSTUP_HOME" in /*) ;; *) RUSTUP_HOME="$root/$RUSTUP_HOME" ;; esac

@@ -41,8 +41,9 @@ jobs:
           test ! -e .cache/mix
           test ! -e .cache/hex
           unset CARGO_HOME RUSTUP_HOME MIX_HOME HEX_HOME npm_config_cache
+          unset GOPATH GOMODCACHE GOCACHE RUSTUP_TOOLCHAIN
           bin/setup ${{ matrix.project }}
-          for item in CARGO_HOME RUSTUP_HOME MIX_HOME HEX_HOME npm_config_cache; do
+          for item in CARGO_HOME RUSTUP_HOME MIX_HOME HEX_HOME npm_config_cache GOPATH GOMODCACHE GOCACHE RUSTUP_TOOLCHAIN; do
             echo "$item=" >> "$GITHUB_ENV"
           done
       - name: Check native code, real NIF and independent interoperability

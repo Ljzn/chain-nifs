@@ -12,6 +12,7 @@ printf "Clean checkout and evidence: %s\n" "$scratch"
 git clone --no-hardlinks --no-local "$root" "$scratch/repo"
 cd "$scratch/repo"
 unset CARGO_HOME RUSTUP_HOME MIX_HOME HEX_HOME npm_config_cache
+unset GOPATH GOMODCACHE GOCACHE RUSTUP_TOOLCHAIN
 unset CARGO_TARGET_DIR MIX_BUILD_PATH MIX_DEPS_PATH ADVISORY_DB CARGO_AUDIT_BIN
 # Root bin/run selects this checkout's empty default cache for every tool.
 export MIX_ENV=test
