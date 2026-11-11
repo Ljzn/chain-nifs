@@ -1,0 +1,52 @@
+{
+  "schemaVersion": 1,
+  "results": [
+    {
+      "id": "native-0",
+      "verified": true
+    },
+    {
+      "id": "native-1",
+      "verified": true
+    },
+    {
+      "id": "native-2",
+      "verified": true
+    },
+    {
+      "id": "native-3",
+      "verified": true
+    },
+    {
+      "id": "native-4",
+      "verified": true
+    },
+    {
+      "id": "native-5",
+      "verified": true
+    },
+    {
+      "id": "native-6",
+      "verified": true
+    },
+    {
+      "id": "native-7",
+      "verified": true
+    }
+  ],
+  "paymentResults": [
+    {
+      "index": 0,
+      "verified": true,
+      "txid": "3017e2e71e7c7b7a874f79e2ce776a80d14f824c95ab221f6b94a138c8bdd41c",
+      "wtxid": "f231629a4d0ca4b6646e40a0bf22c375a4a01c577511fa7e005fe455b827d384",
+      "sighashesHex": [
+        "ce5ca2c48f1208e8162d159108868425ed20316e689448609b8a49087a497842",
+        "0bb2ce8b11be1128a8a7868deda6c8f2204252c6b1800958a0cb07dee28e1c26"
+      ],
+      "weight": 11366,
+      "vsize": 2842,
+      "feeSats": "10000"
+    }
+  ]
+}

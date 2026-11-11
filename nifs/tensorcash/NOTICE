@@ -1,0 +1,7 @@
+TensorCash NIF integration prototype, 2026.
+Copyright 2026 TensorCash NIF project contributors.
+Project-authored integration code: Apache License, Version 2.0.
+Includes adaptations of the pinned liboqs ML-DSA-65 reference keygen and signer, licensed CC0 OR Apache-2.0 (Apache-2.0 selected here).
+Includes verbatim official TensorCash wallet modules for independent testing under Apache-2.0 and the preserved signer MIT license.
+See THIRD_PARTY.md and the source license files for upstream attribution and exact modifications.
+This project is not an official TensorCash release or a claim of production security certification.

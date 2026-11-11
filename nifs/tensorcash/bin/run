@@ -1,0 +1,12 @@
+#!/bin/sh
+set -eu
+project_dir=$(CDPATH= cd -- "$(dirname -- "$0")/.." && pwd)
+cd "$project_dir"
+export RUSTUP_HOME="${RUSTUP_HOME:-$project_dir/.rustup}"
+export CARGO_HOME="${CARGO_HOME:-$project_dir/.cargo-cache}"
+export MIX_HOME="${MIX_HOME:-$project_dir/.mix}"
+export HEX_HOME="${HEX_HOME:-$project_dir/.hex-cache}"
+actual=$(git -C vendor/liboqs rev-parse HEAD)
+[ "$actual" = "97f6b86b1b6d109cfd43cf276ae39c2e776aed80" ] || { echo "Wrong liboqs revision" >&2; exit 1; }
+[ -z "$(git -C vendor/liboqs status --porcelain --untracked-files=all)" ] || { echo "Modified liboqs source" >&2; exit 1; }
+exec "$@"

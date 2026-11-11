@@ -1,0 +1,16 @@
+#!/bin/sh
+# Preserve every report even when one audit fails; never suppress audit failures.
+set -u
+report_dir=${1:-results/generated/audit}
+mkdir -p "$report_dir" || exit 1
+audit_bin=${CARGO_AUDIT_BIN:-${CARGO_HOME:-$PWD/.cargo-cache}/bin/cargo-audit}
+status=0
+if [ -n "${ADVISORY_DB:-}" ]; then
+  "$audit_bin" audit --file native/tensorcash_nif/Cargo.lock --db "$ADVISORY_DB" --no-fetch --json > "$report_dir/cargo-audit.json" || status=1
+else
+  "$audit_bin" audit --file native/tensorcash_nif/Cargo.lock --json > "$report_dir/cargo-audit.json" || status=1
+fi
+npm --prefix interop audit --json > "$report_dir/npm-audit.json" || status=1
+mix hex.audit > "$report_dir/hex-audit.txt" 2>&1 || status=1
+git rev-parse HEAD > "$report_dir/revision.txt" || status=1
+exit "$status"

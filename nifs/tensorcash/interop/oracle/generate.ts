@@ -1,0 +1,80 @@
+/** Independent oracle: all protocol operations use verbatim official wallet modules. */
+import assert from 'node:assert/strict';
+import { readFileSync, writeFileSync } from 'node:fs';
+import { createHash } from 'node:crypto';
+import { fileURLToPath } from 'node:url';
+import { ml_dsa65 } from '@noble/post-quantum/ml-dsa.js';
+import { hex } from '@scure/base';
+import { mldsa65Keygen, mldsa65Sign, mldsa65Verify, encodePkBlob } from './official/pq/mldsa.js';
+import { buildPqTreasury } from './official/pq/address.js';
+import { pqRootFromSeed, spendingKeySeed, spendInfoBytes, identityKeySeed } from './official/pq/derivation.js';
+import { mnemonicToSeed } from './official/hd.js';
+import { NETWORKS } from './official/network.js';
+import { Transaction } from './official/signer/transaction.js';
+import { pqSighash } from './official/pq/sighash.js';
+const h = hex.decode, e = hex.encode;
+const fixture = (name: string) => new URL('../../test/fixtures/' + name, import.meta.url);
+const load = (name: string) => JSON.parse(readFileSync(fixture(name), 'utf8'));
+const sha = (b: Uint8Array | string) => createHash('sha256').update(b).digest('hex');
+const hash256 = (b: Uint8Array) => createHash('sha256').update(createHash('sha256').update(b).digest()).digest();
+const manifest = JSON.parse(readFileSync(new URL('source-manifest.json', import.meta.url), 'utf8'));
+for (const f of manifest.files) assert.equal(sha(readFileSync(new URL('official/' + f.path, import.meta.url))), f.sha256);
+const acvp = load('mldsa65-acvp-fips204.json');
+for (const v of acvp.keyGen) { const kp = mldsa65Keygen(h(v.seed)); assert.equal(e(kp.publicKey), v.pk); assert.equal(e(kp.secretKey), v.sk); }
+for (const v of acvp.sigGenDeterministic) assert.equal(e(ml_dsa65.sign(h(v.message), h(v.sk), {extraEntropy:false})), v.signature);
+for (const v of acvp.sigGenHedged) if (v.rnd) assert.equal(e(ml_dsa65.sign(h(v.message), h(v.sk), {extraEntropy:h(v.rnd)})), v.signature);
+for (const v of acvp.sigVer) assert.equal(ml_dsa65.verify(h(v.signature), h(v.message), h(v.pk)), v.testPassed);
+const core = load('core-mldsa65-signature.json');
+for (const c of core.cases) {
+  const tx = Transaction.fromRaw(h(c.unsignedTxHex), {allowUnknownOutputs:true, allowUnknownInputs:true});
+  tx.updateInput(0, {witnessUtxo:{script:h(c.prevout.scriptPubKey), amount:BigInt(c.prevout.valueSats)}}, true);
+  assert.equal(e(tx.getMLDSASighash(0,h(c.leafScript),c.hashType)), c.digest);
+  assert.equal(e(pqSighash({...tx.getMLDSASighashData(0),inputIndex:0,leaf:{script:h(c.leafScript)},hashType:c.hashType})),c.digest);
+  assert(mldsa65Verify(h(c.publicKey),h(c.digest),h(c.signature)));
+}
+const seeds = [new Uint8Array(32), Uint8Array.from({length:32}, (_,i)=>i)];
+const keygen = seeds.map((seed,i) => { const kp=mldsa65Keygen(seed); return {id:i?'ascending32':'zero32',seedHex:e(seed),publicKeyHex:e(kp.publicKey),secretKeyHex:e(kp.secretKey),pkBlobHex:e(encodePkBlob(kp.publicKey))}; });
+const msg32 = Uint8Array.from({length:32},(_,i)=>255-i);
+const signatures = keygen.flatMap(k => [new Uint8Array(32), Uint8Array.from({length:32},(_,i)=>i+32)].map((rnd,i)=> {
+ const sig=mldsa65Sign(h(k.secretKeyHex),msg32,{extraEntropy:i?rnd:false});
+ assert(mldsa65Verify(h(k.publicKeyHex),msg32,sig));
+ const bad=Uint8Array.from(msg32);bad[0]^=1;assert(!mldsa65Verify(h(k.publicKeyHex),bad,sig));
+ return {id:k.id+(i?'-fixed-rnd':'-rnd0'),keyId:k.id,msg32Hex:e(msg32),rndHex:e(rnd),signatureHex:e(sig),verified:true};
+}));
+const mnemonic='abandon abandon abandon abandon abandon abandon abandon abandon abandon abandon abandon about';
+const passphrase='TREZOR';
+const seed64=mnemonicToSeed(mnemonic,passphrase);
+assert.equal(e(seed64),'c55257c360c07c72029aebc1b53c05ed0362ada38ead3e3e9efa3708e53495531f09a6987599d18264c1e1c92f2cf141630c7a3c4ab7c81b2f001698e7463b04');
+const root=pqRootFromSeed(seed64),genesisHex=NETWORKS.regtest.genesisHash!,policyIdHex='42'.repeat(32);
+const spend=spendingKeySeed(root,genesisHex,0,policyIdHex,0,7),spendKp=mldsa65Keygen(spend);
+const derivation={mnemonic,passphrase,bip39SeedHex:e(seed64),rootHex:e(root),genesisHex,genesisByteOrder:'Core display order, decoded without reversal',account:0,policyIdHex,branch:0,index:7,spendInfoHex:e(spendInfoBytes(genesisHex,0,policyIdHex,0,7)),spendingSeedHex:e(spend),identitySeedHex:e(identityKeySeed(root,genesisHex,0)),publicKeyHex:e(spendKp.publicKey),secretKeyHex:e(spendKp.secretKey)};
+const addresses=Object.values(NETWORKS).flatMap(network=>keygen.map(k=>{
+ const a=buildPqTreasury(1,[h(k.pkBlobHex)],network);
+ return {network:network.name,hrp:network.bech32Hrp,threshold:1,keyId:k.id,pkBlobHex:k.pkBlobHex,leafScriptHex:e(a.script),leafHashHex:e(a.leafHash),internalKeyHex:e(a.internalKey),outputKeyHex:e(a.outputKey),parity:a.parity,controlBlockHex:e(a.controlBlock),scriptPubKeyHex:e(a.scriptPubKey),address:a.address};
+}));
+const transactions=Object.values(NETWORKS).map(network=>{
+ const k=keygen[1],a=buildPqTreasury(1,[h(k.pkBlobHex)],network),dst=addresses.find(x=>x.network===network.name&&x.keyId==='zero32')!;
+ const inputs=[{txid:e(Uint8Array.from({length:32},(_,i)=>i)),vout:1,valueSats:'123456789',scriptPubKeyHex:e(a.scriptPubKey),sequence:0xfffffffd,keyId:k.id},{txid:e(Uint8Array.from({length:32},(_,i)=>255-i)),vout:7,valueSats:'87654321',scriptPubKeyHex:e(a.scriptPubKey),sequence:0xfffffffd,keyId:k.id}];
+ const outputs=[{valueSats:'100000000',scriptPubKeyHex:dst.scriptPubKeyHex},{valueSats:'111101110',scriptPubKeyHex:e(a.scriptPubKey)}];
+ const tx=new Transaction({version:2,lockTime:0,allowUnknownInputs:true,allowUnknownOutputs:true});
+ for(const i of inputs) tx.addInput({txid:h(i.txid),index:i.vout,sequence:i.sequence,witnessUtxo:{amount:BigInt(i.valueSats),script:h(i.scriptPubKeyHex)}});
+ for(const o of outputs) tx.addOutput({amount:BigInt(o.valueSats),script:h(o.scriptPubKeyHex)});
+ const policy={threshold:1,members:a.members,leafScript:a.script,leafHash:a.leafHash,controlBlock:a.controlBlock};
+ for(let i=0;i<2;i++) tx.setPqPolicy(i,policy);
+ const unsignedTxHex=e(tx.toBytes(false,false));
+ const sighashesHex=inputs.map((_,i)=>{const digest=tx.getPqSighash(i); assert.equal(e(digest),e(pqSighash({...tx.getMLDSASighashData(i),inputIndex:i,leaf:{script:a.script}})));return e(digest);});
+ assert.notEqual(sighashesHex[0],sighashesHex[1]);
+ const signaturesHex=sighashesHex.map(msg=>e(mldsa65Sign(h(k.secretKeyHex),h(msg),{extraEntropy:false})));
+ signaturesHex.forEach((sig,i)=>tx.addPqPartialSignature(i,h(k.pkBlobHex),h(sig)));
+ for(let i=0;i<2;i++)tx.finalizePqInput(i);
+ const witnessesHex=inputs.map((_,i)=>tx.getInput(i).finalScriptWitness!.map(e));
+ for(let i=0;i<2;i++)assert.deepEqual(witnessesHex[i],[signaturesHex[i]+'01',e(a.script),e(a.controlBlock)]);
+ const raw=tx.extract(),rawTxHex=e(raw),txid=e(hash256(h(unsignedTxHex)).reverse()),wtxid=e(hash256(raw).reverse()); assert.equal(tx.id,txid);
+ const parsed=Transaction.fromRaw(raw,{allowUnknownInputs:true,allowUnknownOutputs:true});assert.equal(parsed.hex,rawTxHex);
+ return {id:network.name+'-samepk-2in-2out',network:network.name,version:2,lockTime:0,hashType:1,feeSats:'10000',baseBytes:unsignedTxHex.length/2,totalBytes:raw.length,weight:tx.weight,vsize:tx.vsize,inputs,outputs,unsignedTxHex,sighashesHex,signaturesHex,witnessesHex,rawTxHex,txid,wtxid};
+});
+const result={schemaVersion:1,provenance:{oracle:'Unmodified official TensorCash Light Treasury Wallet TypeScript modules; no Rust outputs consumed',upstreamRevision:'443ebf7ef6a717116ef80f9d6e1f38711905c77a',sourceManifest:'interop/oracle/source-manifest.json',keygen:'FIPS 204 ML-DSA.KeyGen_internal seed32',signing:'FIPS 204 external pure ML-DSA, empty context; rnd0 deterministic and fixed caller rnd32',warning:'Public synthetic test secrets; never fund these addresses',copiedFixtures:['core-mldsa65-signature.json','mldsa65-acvp-fips204.json'].map(name=>({name,sha256:sha(readFileSync(fixture(name)))}))},keygen,signatures,derivation,addresses,transactions};
+const text=JSON.stringify(result,null,2)+String.fromCharCode(10);
+if(process.argv.includes('--check')) assert.equal(readFileSync(fixture('wallet-oracle-v1.json'),'utf8'),text,'fixture regeneration differs');
+else writeFileSync(fixture('wallet-oracle-v1.json'),text);
+console.log(JSON.stringify({status:'ok',mode:process.argv.includes('--check')?'check':'generate',keygen:keygen.length,signatures:signatures.length,addresses:addresses.length,transactions:transactions.length,coreCases:core.cases.length,acvp:Object.fromEntries(['keyGen','sigGenDeterministic','sigGenHedged','sigVer'].map(k=>[k,acvp[k].length])),fixture:fileURLToPath(fixture('wallet-oracle-v1.json')),sha256:sha(text)},null,2));
