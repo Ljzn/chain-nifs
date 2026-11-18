@@ -32,9 +32,15 @@ defmodule TensorCashNif.PrecompiledTest do
     %{root: root, artifact: artifact, manifest: manifest, manifest_path: manifest_path}
   end
 
-  test "source is the default and invalid modes fail explicitly" do
-    assert Precompiled.rustler_options!("/unused", %{}) == []
-    assert Precompiled.rustler_options!("/unused", %{"CHAIN_NIFS_MODE" => "source"}) == []
+  test "source is the default and invalid modes fail explicitly", ctx do
+    vendor = Path.join(ctx.root, "vendor/liboqs")
+    signing_dir = Path.join(vendor, "src/sig/ml_dsa/pqcrystals-dilithium-standard_ml-dsa-65_ref")
+    File.mkdir_p!(signing_dir)
+    File.write!(Path.join(vendor, "CMakeLists.txt"), "fixture")
+    File.write!(Path.join(signing_dir, "sign.c"), "fixture")
+
+    assert Precompiled.rustler_options!(ctx.root, %{}) == []
+    assert Precompiled.rustler_options!(ctx.root, %{"CHAIN_NIFS_MODE" => "source"}) == []
 
     assert_raise ArgumentError, ~r/invalid CHAIN_NIFS_MODE/, fn ->
       Precompiled.rustler_options!("/unused", %{"CHAIN_NIFS_MODE" => "typo"})

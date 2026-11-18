@@ -22,7 +22,9 @@
 - 本项目子模块liboqs：97f6b86b1b6d109cfd43cf276ae39c2e776aed80（0.15.0）。
 - Rust1.96.0，Rustler Hex0.37.3 / crate0.37.2；CMake及C编译器；Elixir1.15+，本机OTP27/Elixir1.20.5。
 
-使用项目本地缓存，默认编译static PIC/reference ML-DSA-65并禁用OpenSSL。首次构建：
+作为 Mix Git 依赖时不需要 `submodules: true`，也支持 `sparse: "nifs/tensorcash"`。默认 `CHAIN_NIFS_MODE=source` 在 Rustler 启动之前，只准备本项目锁定提交的 liboqs 子模块；不拉取 Parano1d，不跟随远端分支，不覆盖本地修改。已有正确、干净源码时可以离线复用；没有 Git 元数据的源码包必须自带完整 vendor 源码。`CHAIN_NIFS_MODE=precompiled` 只校验并使用已提交的产物，完全不初始化源码子模块，也不自动回退到源码模式。
+
+使用项目本地缓存，默认编译static PIC/reference ML-DSA-65并禁用OpenSSL。下面是通过 `bin/run` 使用固定版本检查、包括直接调用 Cargo 的独立开发流程，因此显式初始化子模块；普通 `mix compile` 会自动完成该准备步骤：
 
 ```sh
 git submodule update --init vendor/liboqs

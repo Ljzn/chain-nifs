@@ -1,8 +1,10 @@
-# Chain NIFs
+# ParkingLot / Chain NIFs
+
+[peatio/ParkingLot 的 chain-nifs 分支](https://github.com/peatio/ParkingLot/tree/chain-nifs) 用于组织维护 Parano1d、TensorCash、Blocknet NIF 原型、预编译产物与互操作证据。它保留完整签名 NIF 历史，与 ParkingLot 的默认 `main` 独立，不修改其他分支。请长期保留 `chain-nifs`；Venezia 依赖仍固定提交 SHA。个人源仓库保持原样。旧新 SHA、完整映射和验证边界见 [组织迁移说明](ORGANIZATION_MIGRATION.md)。
 
 Parano1d、TensorCash、Blocknet 的独立 Elixir/Rustler 原型合集。三个项目保留完整 Git 历史、各自工具链、lockfile、原生构建和官方互操作验证。它们不是 Mix umbrella，也没有合并 Cargo workspace 或依赖锁。
 
-私有仓库：[Ljzn/chain-nifs](https://github.com/Ljzn/chain-nifs)，默认分支 develop。三个原仓库保留历史发布记录。迁移验收见 [HANDOFF.md](HANDOFF.md)，远程验证以对应提交的 [Linux CI](https://github.com/Ljzn/chain-nifs/actions/workflows/ci.yml) 为准。
+个人源仓库 [Ljzn/chain-nifs](https://github.com/Ljzn/chain-nifs) 的 develop 历史保留，不改写。三个原仓库保留历史发布记录。[HANDOFF.md](HANDOFF.md) 和个人源仓库的 [Linux CI](https://github.com/Ljzn/chain-nifs/actions/workflows/ci.yml) 属于历史验收证据；组织仓库的运行结果须对应组织提交 SHA 单独核实。
 
 ## 项目导航
 
@@ -21,8 +23,8 @@ Parano1d、TensorCash、Blocknet 的独立 Elixir/Rustler 原型合集。三个�
 ## 克隆与准备
 
 ~~~sh
-git clone --recurse-submodules git@github.com:Ljzn/chain-nifs.git
-cd chain-nifs
+git clone --branch chain-nifs --recurse-submodules git@github.com:peatio/ParkingLot.git
+cd ParkingLot
 # 普通 clone 或更新后的 checkout 可补取固定依赖：
 git submodule update --init --recursive
 bin/setup all

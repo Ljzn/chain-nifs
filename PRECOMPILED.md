@@ -26,6 +26,17 @@ the host. The final release does not need these environment variables: its NIF
 load paths are selected at Elixir compile time, and deployed bytes/host/OTP are
 checked again before loading. No Cargo, Rust, CMake, Go or Node is invoked. Hex
 dependency retrieval still needs network unless its usual caches are provided.
+TensorCash Git consumers should omit `submodules: true`, including when using
+`sparse: "nifs/tensorcash"`. Precompiled mode never initializes source submodules;
+no consumer Dockerfile needs Git settings naming liboqs or Parano1d.
+
+TensorCash source mode prepares only its own liboqs gitlink before Rustler runs.
+It checks the parent HEAD/index and submodule worktree, initializes the locked
+commit if needed, and verifies the resulting checkout. It does not follow remote
+HEAD, overwrite local changes, or initialize the Parano1d submodule. A ready,
+clean checkout is reused offline; a source archive must already contain complete
+liboqs sources. Direct Cargo commands still require initialized sources.
+
 Source mode remains the default. Changing environment variables alone does not
 invalidate Mix incremental outputs; use fresh build outputs when changing modes,
 or force dependency compilation with mix deps.compile --force.

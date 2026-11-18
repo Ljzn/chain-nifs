@@ -6,6 +6,8 @@ defmodule TensorCashNif.Precompiled do
   def rustler_options!(root, env \\ System.get_env()) do
     case Map.get(env, "CHAIN_NIFS_MODE", "source") do
       "source" ->
+        Code.ensure_compiled!(TensorCashNif.Source)
+        TensorCashNif.Source.prepare!(root)
         []
 
       "precompiled" ->

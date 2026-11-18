@@ -1,3 +1,5 @@
+> 当前说明（2026-11-13）：以下全文保留为个人源仓库的历史记录，其中默认 develop、remote、导入 SHA 与可直接查阅旧 SHA 的说法适用于当时的原仓库。组织仓库 [peatio/gondola](https://github.com/peatio/gondola) 已在 `migration/chain-nifs` 导入签名历史；默认 `main` 与归档状态待维护者确认。三份 unsigned subtree merge 及其后代共 12 个 SHA 已改变；在组织克隆中查阅旧提交前，须用 [完整映射](signed-history-map.json) 转换，不能假定旧 unsigned SHA 仍可直接 `git show`。迁移原因、内容一致性审计与 pin 见 [组织迁移说明](ORGANIZATION_MIGRATION.md)。
+
 # 完整历史迁移记录
 
 本合集采用 git subtree 的完整历史导入，不使用 --squash，不重写来源提交。三个子项目在当前树中位于 nifs/ 下；来源仓库中的旧提交保留其原始根目录路径。这不是把三个原仓库变成 Git submodule：只有下述两份官方依赖继续使用 submodule。
