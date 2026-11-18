@@ -1,6 +1,6 @@
 # Parano1d Rustler NIF 验证项目
 
-现位于私有 monorepo [Ljzn/chain-nifs](https://github.com/Ljzn/chain-nifs) 的 nifs/parano1d；统一入口及当前 CI 见 [根目录说明](../../README.md)。项目验证在 BEAM 内调用官方 Rust 库生成普通 NOID 支付的 V4 所有权证明。没有接入 Venezia 业务流程、生产钱包或广播接口。
+现位于公开独立 monorepo [Ljzn/chain-nifs](https://github.com/Ljzn/chain-nifs) 的 nifs/parano1d；统一入口及当前 CI 见 [根目录说明](../../README.md)。项目验证在 BEAM 内调用官方 Rust 库生成普通 NOID 支付的 V4 所有权证明。原型使用合成测试数据，未接入生产钱包或广播接口。
 
 ## 固定来源与构建
 
@@ -13,7 +13,7 @@
 先克隆完整项目，再从项目目录执行：
 
 ```sh
-git clone --recurse-submodules git@github.com:Ljzn/chain-nifs.git
+git clone --branch develop --recurse-submodules https://github.com/Ljzn/chain-nifs.git
 cd chain-nifs/nifs/parano1d
 # 已有普通 clone 可以补取依赖：
 git submodule update --init --recursive
@@ -34,7 +34,7 @@ bin/run cargo test --manifest-path native/parano1d_nif/Cargo.toml --locked --lib
 
 `bin/run` 会进入项目目录，设置本地工具链 / Cargo / Hex 缓存，并拒绝不是指定提交或存在 tracked 修改的上游源码。首次 Rust release 编译需要时间；后续运行复用构建产物。
 
-官方依赖通过 `git submodule update --init --recursive` 恢复，构建不依赖原来的 Alice 工作区或相邻研究目录。不要将相同 32 字节同时当作钱包 master secret 与本接口 SpendSecret：官方 master 还会经过索引派生，两者生成的地址不同。
+官方依赖通过 `git submodule update --init --recursive` 恢复，构建所需上游源码由固定子模块提供。不要将相同 32 字节同时当作钱包 master secret 与本接口 SpendSecret：官方 master 还会经过索引派生，两者生成的地址不同。
 
 ## 接口
 
@@ -84,7 +84,7 @@ ERL_FLAGS="+S 2:2" bin/run /usr/bin/time -l \
   > results/benchmark.stdout.json 2> results/time.txt
 ```
 
-`reload` 只能在独立测试 BEAM 内运行，它主动删除 Native 模块、soft purge、确认旧代码已清除，再重新加载，连续三轮验证先前证明。不是在已有 Venezia 进程中进行热升级测试。
+`reload` 只能在独立测试 BEAM 内运行，它主动删除 Native 模块、soft purge、确认旧代码已清除，再重新加载，连续三轮验证先前证明。这些结果仅验证独立 BEAM 中的正常卸载与重载行为。
 
 基准每种形状只测首次和一次热调用，不提供 p95 或吞吐量结论。`authorize` 包含完整自验。每次 scoped pool 的创建和 join 也包含在耗时内。BEAM memory 不包含所有 Rust 分配，因此整体内存以 macOS `time -l` 的 maximum resident set size 为准；本环境 `ps` 无法取得自身 RSS，JSON 中相应字段为 null。其他操作系统的 peak RSS 命令与计量单位需对应调整。
 

@@ -2,13 +2,13 @@
 
 ## 状态与边界
 
-私有仓库 [Ljzn/chain-nifs](https://github.com/Ljzn/chain-nifs)，开发分支 develop。本地位于 Alice/_local/chain_nifs。三个原仓库继续保留；精确来源和无 squash subtree 导入记录见 [MIGRATION.md](MIGRATION.md)。
+公开独立仓库 [Ljzn/chain-nifs](https://github.com/Ljzn/chain-nifs)，开发分支 develop。三个原仓库继续保留；精确来源和无 squash subtree 导入记录见 [MIGRATION.md](MIGRATION.md)。
 
 三个独立 Mix/Rustler 项目位于 nifs/parano1d、nifs/tensorcash、nifs/blocknet。保留原 API、Rust/Hex/npm lockfile 和许可，不建立 umbrella 或统一 Cargo workspace。协议源码、固定 fixture 与官方来源未改变。唯一子项目脚本调整是 Parano1d bin/run 允许外部缓存环境覆盖，默认仍为项目本地。
 
 ## Scheduler 环境 review 修复
 
-根 bin/check 现在默认导出 ERL_FLAGS="${ERL_FLAGS:-+S 2:2}"，显式非空配置保持不变；不修改或放宽 Parano1d scheduler 测试。未设置 ERL_FLAGS 的实际完整命令 `env -u ERL_FLAGS bin/check all` 已 exit 0，ExUnit 26/41/31、Rust 4/11/10 和官方20项及互操作检查通过。实际赋值语句的显式覆盖 `+S 2:2 +A 4` 保留检查、sh -n 与 git diff --check 也通过。日志 .cache/check-scheduler-default.log。仅修改根入口和说明，六个预编译库及 manifest 未改，Venezia 固定依赖提交不需要改变。
+根 bin/check 现在默认导出 ERL_FLAGS="${ERL_FLAGS:-+S 2:2}"，显式非空配置保持不变；不修改或放宽 Parano1d scheduler 测试。未设置 ERL_FLAGS 的实际完整命令 `env -u ERL_FLAGS bin/check all` 已 exit 0，ExUnit 26/41/31、Rust 4/11/10 和官方20项及互操作检查通过。实际赋值语句的显式覆盖 `+S 2:2 +A 4` 保留检查、sh -n 与 git diff --check 也通过。日志 .cache/check-scheduler-default.log。仅修改根入口和说明，六个预编译库及 manifest 未改。
 
 ## 统一入口
 
@@ -46,19 +46,19 @@ README 已补 Rustup/proxy/cache 边界和本地审计工具/数据库覆盖方�
 
 最终空缓存三行Linuxmatrix全部success：[run43000502219](https://github.com/Ljzn/chain-nifs/actions/runs/43000502219)，精确headSHA为e6e50ee。每行setup/check/audit/artifact通过，三份artifact已下载复核。RustSec1453条，revision31cf5a8673e10d3a4d7d829ad5095f47ed419049；native依赖44/59/61及Blockoracle61，0已知漏洞、ignore=[]，保留bincode/clear_on_drop未维护告警。
 
-## Venezia Alpine 预编译产物
+## Alpine 预编译产物
 
-产物提交79aa874包含三项目的amd64/arm64 musl共享库与各自manifest（共六库约7.82MiB）。准确源码来源fabebe947a2d4d3226f100b797fd0ace91d985a8，Rust1.96.0，固定Venezia Alpine3.21.7/OTP27 builder及digest，动态musl参数-C target-feature=-crt-static；manifest记录SHA256/目标/OTP/官方来源，下载后逐个核对哈希与ELF架构。
+产物提交79aa874包含三项目的amd64/arm64 musl共享库与各自manifest（共六库约7.82MiB）。准确源码来源fabebe947a2d4d3226f100b797fd0ace91d985a8，Rust1.96.0，固定Alpine3.21.7/OTP27 builder及digest，动态musl参数-C target-feature=-crt-static；manifest记录SHA256/目标/OTP/官方来源，下载后逐个核对哈希与ELF架构。
 
 [原生双平台生成与运行CI43010298955](https://github.com/Ljzn/chain-nifs/actions/runs/43010298955)全部success：各自无原生编译工具的干净Elixir容器中包装层编译、完整ExUnit26/41/31；最终Alpine release --networknone中实际Parano证明、Tensor签名与正负验签、Block范围证明与正负验证均成功。本地默认源码根mixprecommit也退出0，保持Rust测试/interop/mutation/reload全部通过。
 
-消费设置CHAIN_NIFS_MODE=precompiled，自动选当前musl架构；Rustler skip_compilation?:true且无Cargo调用。加载前编译/运行两次检查主机、OTP27、manifest和SHA，无下载/回退。runtime无需MODE/TARGET环境。切换mode需fresh输出或强制依赖编译。详见[PRECOMPILED.md](PRECOMPILED.md)。尚未修改或实际构建完整Venezia项目镜像；这是针对其目标环境的独立release验收。
+消费设置CHAIN_NIFS_MODE=precompiled，自动选当前musl架构；Rustler skip_compilation?:true且无Cargo调用。加载前编译/运行两次检查主机、OTP27、manifest和SHA，无下载/回退。runtime无需MODE/TARGET环境。切换mode需fresh输出或强制依赖编译。详见[PRECOMPILED.md](PRECOMPILED.md)。上述结果为独立 NIF release 的历史验收，不代表完整消费应用的镜像构建结果。
 
 预编译workflow手动触发生成+验证；push相关产物/loader/runtime变更时直接验证仓库二进制，跳过Rust编译。[已提交产物直接消费CI43011582747](https://github.com/Ljzn/chain-nifs/actions/runs/43011582747)在79aa874的两行全部success，实际Compile pinned Alpine binaries为skipped，无工具编译与真实release验证通过。ELF DT_NEEDED核对六库只需libgcc_s.so.1及对应musl libc；BEAM/其他应用仍保留自己的运行依赖。默认源码matrix保留。[79aa874源码完整matrix43011582762](https://github.com/Ljzn/chain-nifs/actions/runs/43011582762)三个项目全部success，包含完整原生/互操作检查、审计和证据上传。监控曾因GitHub API EOF退出1，重查权威状态及恢复监控后确认实际全部通过，不将监控网络中断记为测试失败。
 
 ## Linux 与发布追溯
 
-[根 matrix CI](.github/workflows/ci.yml) 为三个项目各执行 setup/check/audit，Ubuntu24.04、fail-fast=false、每行45分钟；递归 checkout 两个官方 submodule并保留全历史。固定OTP27.3.4.19、Elixir1.20.5、Rust1.96.0，TensorCash Node22，Go1.24.12。cargo-audit0.22.2 显式安装，audit 不隐式安装或忽略失败。每行有独立 artifact，保留30天。
+[根 matrix CI](.github/workflows/ci.yml) 为三个项目各执行 setup/check/audit，GitHub hosted Ubuntu24.04、fail-fast=false、每行45分钟；递归 checkout 两个官方 submodule并保留全历史。固定OTP27.3.4.19、Elixir1.20.5、Rust1.96.0，TensorCash Node22，Go1.24.12。cargo-audit0.22.2 显式安装，audit 不隐式安装或忽略失败。每行有独立 artifact，保留30天。
 
 远程 SHA、matrix实际结论及artifact以 [GitHub Actions](https://github.com/Ljzn/chain-nifs/actions/workflows/ci.yml) 对应提交为准；本节不以本地验收代替远程执行。最终集成提交可由 git log 查询，发布时核对 origin/develop 与本地 HEAD 一致、工作区 clean。
 

@@ -215,8 +215,8 @@ defmodule TensorCashNif.SourceTest do
     refute File.exists?(Path.join(package, ".git"))
   end
 
-  test "archives inside an unrelated Venezia Git root never initialize its submodules", ctx do
-    outer = Path.join(ctx.tmp, "outer-venezia")
+  test "archives inside an unrelated consumer Git root never initialize its submodules", ctx do
+    outer = Path.join(ctx.tmp, "outer-consumer")
     init_repo!(outer)
     File.write!(Path.join(outer, "sentinel.txt"), "outer repository must stay intact\n")
     commit!(outer, "unrelated app")

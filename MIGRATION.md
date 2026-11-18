@@ -1,5 +1,3 @@
-> 当前说明（2026-11-13）：以下全文保留为个人源仓库的历史记录，其中默认 develop、remote、导入 SHA 与可直接查阅旧 SHA 的说法适用于当时的原仓库。组织仓库 [peatio/gondola](https://github.com/peatio/gondola) 已在 `migration/chain-nifs` 导入签名历史；默认 `main` 与归档状态待维护者确认。三份 unsigned subtree merge 及其后代共 12 个 SHA 已改变；在组织克隆中查阅旧提交前，须用 [完整映射](signed-history-map.json) 转换，不能假定旧 unsigned SHA 仍可直接 `git show`。迁移原因、内容一致性审计与 pin 见 [组织迁移说明](ORGANIZATION_MIGRATION.md)。
-
 # 完整历史迁移记录
 
 本合集采用 git subtree 的完整历史导入，不使用 --squash，不重写来源提交。三个子项目在当前树中位于 nifs/ 下；来源仓库中的旧提交保留其原始根目录路径。这不是把三个原仓库变成 Git submodule：只有下述两份官方依赖继续使用 submodule。
@@ -12,11 +10,11 @@
 | TensorCash | [Ljzn/tensorcash-nif](https://github.com/Ljzn/tensorcash-nif) | 45fe20797475578540177699c54bb1680344a3f9 | [nifs/tensorcash](nifs/tensorcash/README.md) |
 | Blocknet | [Ljzn/blocknet-nif](https://github.com/Ljzn/blocknet-nif) | 4a9140025408694aa8393377049043a6f4eec70b | [nifs/blocknet](nifs/blocknet/README.md) |
 
-原仓库及其 remote 保留，不归档、不删除、不改写历史。本 monorepo 计划使用独立私有 remote Ljzn/chain-nifs、默认分支 develop；是否已发布和 CI 是否通过见 [HANDOFF.md](HANDOFF.md)。
+原仓库及其 remote 保留，不归档、不删除、不改写历史。本 monorepo 当前为公开独立仓库 [Ljzn/chain-nifs](https://github.com/Ljzn/chain-nifs)，默认分支 develop；历史验证记录见 [HANDOFF.md](HANDOFF.md)。
 
 ## 实际导入过程
 
-执行位置为 Alice/_local/chain_nifs；三个 sibling 来源目录均已存在。父代理实际执行的关键命令为：
+以下为初次导入时执行的关键命令；相对路径指向三个来源仓库的本地克隆，不要求当前开发环境保留这些目录：
 
 ~~~sh
 git init -b develop
@@ -26,7 +24,7 @@ git subtree add --prefix=nifs/tensorcash ../tensorcash_nif develop
 git subtree add --prefix=nifs/blocknet ../blocknet_nif develop
 ~~~
 
-没有 --squash 参数。可在任意完整克隆中找到的导入提交为：
+没有 --squash 参数。初次导入时记录的提交如下；这些 SHA 是历史记录，查阅时应确认当前克隆中对应对象是否可达：
 
 | 步骤 | 导入提交 |
 |---|---|
@@ -35,7 +33,7 @@ git subtree add --prefix=nifs/blocknet ../blocknet_nif develop
 | TensorCash subtree | 961a1c778166cc9ebf85768b49e0b1d5619e581e |
 | Blocknet subtree | 452e341d45a28f48482aa1a05290b48c56723afd |
 
-这些导入提交把来源 HEAD 作为可达历史接入，因此原 SHA 可直接用于 git show 或 merge-base --is-ancestor。旧提交中的文件仍使用旧根路径，例如：
+初次导入把来源 HEAD 接入完整历史；在保留对应对象的克隆中，可使用原 SHA 执行 git show 或 merge-base --is-ancestor。旧提交中的文件仍使用旧根路径，例如：
 
 ~~~sh
 git merge-base --is-ancestor 4a9140025408694aa8393377049043a6f4eec70b HEAD
@@ -70,4 +68,4 @@ git log -- nifs/blocknet
 
 原仓库中已经成功的本地或 Linux CI、review、benchmark、audit 属于原提交的历史证据。迁移后需要在 monorepo 的精确 SHA 上重新执行根入口并验证递归 submodule、三个项目、matrix CI 与 artifact 路径。
 
-本文记录迁移来源与方法，不声称迁移后的构建、审计、Linux matrix 或私有发布已经完成；最终结果由父维护者在 [HANDOFF.md](HANDOFF.md) 补充。各项目 LICENSE/NOTICE/THIRD_PARTY 继续有效，本合集为多许可聚合，不提供统一替代许可。
+本文记录迁移来源与方法，不声称迁移后的构建、审计、Linux matrix 已经完成；历史验证结果在 [HANDOFF.md](HANDOFF.md) 补充。各项目 LICENSE/NOTICE/THIRD_PARTY 继续有效，本合集为多许可聚合，不提供统一替代许可。

@@ -1,8 +1,8 @@
 # TensorCash NIF prototype handoff — 2026-11-10
 
-本地独立repo：/Users/linjiezhang/Documents/venezia/_local/worktrees/Alice/_local/tensorcash_nif，branchdevelop。用户已授权实现、Bob review修复及GitHub私有发布。远程https://github.com/Ljzn/tensorcash-nif，private=true，默认develop；修复commit14b77dd8b4b24f521dd6512af05528b40398a8ae。没有修改Venezia业务/Parano1d工程、没有访问真实钱包秘密或广播交易。
+本项目现位于公开独立仓库 [Ljzn/chain-nifs](https://github.com/Ljzn/chain-nifs) 的 `nifs/tensorcash`，默认分支 `develop`。以下保留原独立仓库 [Ljzn/tensorcash-nif](https://github.com/Ljzn/tensorcash-nif) 的实现与 review 历史，修复提交为 `14b77dd8b4b24f521dd6512af05528b40398a8ae`。所有验证使用公开合成数据，未访问真实钱包秘密或广播交易。
 
-## Bob review处理（后续用户已授权修复及私有发布）
+## Bob review处理
 
 Wrapper整表length已改为有界遍历，百万列表reductions回归先red后green。新增DirectNative回归发现branch256截断，已改为u32+checked窄化；对256/257/65536/u32max拒绝。新增官方identity向量、1×16/64×16、MAX_MONEY/零金额/零fee/coinbase/rawcap/sequence及DirectNative边界；本机33ExUnit、11Rust通过。
 

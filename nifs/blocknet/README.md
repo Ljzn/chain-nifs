@@ -1,6 +1,6 @@
 # Blocknet RingCT NIF 原型
 
-现位于私有 monorepo [Ljzn/chain-nifs](https://github.com/Ljzn/chain-nifs) 的 nifs/blocknet，默认分支 develop。统一入口及当前 Linux CI 见 [根目录说明](../../README.md)；原独立仓库 [Ljzn/blocknet-nif](https://github.com/Ljzn/blocknet-nif) 保留历史验证记录。下方命令从本项目目录执行。
+现位于公开独立 monorepo [Ljzn/chain-nifs](https://github.com/Ljzn/chain-nifs) 的 nifs/blocknet，默认分支 develop。统一入口及当前 Linux CI 见 [根目录说明](../../README.md)；原独立仓库 [Ljzn/blocknet-nif](https://github.com/Ljzn/blocknet-nif) 保留历史验证记录。下方命令从本项目目录执行。
 
 面向 Blocknet 当前椭圆曲线交易格式的 Elixir/Rustler 实验项目。基线为官方 core d4c7f78572e5dd637e7f322ea89573b65912e64c；实现 Ristretto255 环签名、Pedersen 承诺、单输出 Bulletproofs，以及 version 1 indexed stealth 支付构造与恢复。本项目不包含矿工或 Faraday 后量子证明。
 

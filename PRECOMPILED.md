@@ -1,6 +1,6 @@
-# Venezia Alpine precompiled NIFs
+# Alpine precompiled NIFs
 
-The binary build uses Venezia's exact builder image:
+The binary build uses this pinned builder image:
 hexpm/elixir:1.20.0-erlang-27.3.4.11-alpine-3.21.7, OTP 27, Rust 1.96.0,
 production Mix compilation, CMake, and RUSTFLAGS=-C target-feature=-crt-static.
 The base is pinned to multi-platform manifest digest
@@ -106,8 +106,7 @@ changes. Review binaries and manifests with their source changes.
 
 The monorepo-root Docker context exclusions must omit all host caches, deps,
 native target directories, generated native outputs and Git metadata while
-including official submodule source. The CLI never uses Venezia's broader
-research workspace as its Docker context.
+including official submodule source. The CLI uses the monorepo root as its Docker context.
 
 ## Runtime acceptance
 
@@ -118,7 +117,7 @@ disabled. The release exercises a real Parano1d proof, ML-DSA sign/verify and a
 Blocknet range proof plus negative cases.
 
 Generation alone does not prove runtime compatibility. Validate both platforms
-against Venezia's actual Alpine runtime with Rust/Cargo/Go absent, compile
+against the intended Alpine runtime with Rust/Cargo/Go absent, compile
 wrappers in precompiled mode, inspect shared-library dependencies, and exercise
 real NIF calls. Keep required runtime libraries such as libgcc according to
 that inspection. Ubuntu/glibc and macOS artifacts cannot replace musl binaries.

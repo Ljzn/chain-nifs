@@ -1,8 +1,8 @@
 # TensorCash NIF prototype
 
-现位于私有 monorepo [Ljzn/chain-nifs](https://github.com/Ljzn/chain-nifs) 的 nifs/tensorcash，默认分支 develop。原独立仓库 [Ljzn/tensorcash-nif](https://github.com/Ljzn/tensorcash-nif) 保留历史发布记录。统一构建入口见 [根目录说明](../../README.md)；下方命令从本项目目录执行。
+现位于公开独立 monorepo [Ljzn/chain-nifs](https://github.com/Ljzn/chain-nifs) 的 nifs/tensorcash，默认分支 develop。原独立仓库 [Ljzn/tensorcash-nif](https://github.com/Ljzn/tensorcash-nif) 保留历史发布记录。统一构建入口见 [根目录说明](../../README.md)；下方命令从本项目目录执行。
 
-独立 Elixir/Rustler 项目，封装 TensorCash 普通 TSC 的 ML-DSA-65 后量子授权。所有秘密/prevout 都是公开合成测试数据；没有修改 Venezia 业务代码、接入生产节点或广播交易。
+独立 Elixir/Rustler 项目，封装 TensorCash 普通 TSC 的 ML-DSA-65 后量子授权。所有秘密/prevout 都是公开合成测试数据；未接入生产节点或广播交易。
 
 ## 实现范围
 

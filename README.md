@@ -1,10 +1,10 @@
-# ParkingLot / Chain NIFs
+# Chain NIFs
 
-[peatio/ParkingLot 的 chain-nifs 分支](https://github.com/peatio/ParkingLot/tree/chain-nifs) 用于组织维护 Parano1d、TensorCash、Blocknet NIF 原型、预编译产物与互操作证据。它保留完整签名 NIF 历史，与 ParkingLot 的默认 `main` 独立，不修改其他分支。请长期保留 `chain-nifs`；Venezia 依赖仍固定提交 SHA。个人源仓库保持原样。旧新 SHA、完整映射和验证边界见 [组织迁移说明](ORGANIZATION_MIGRATION.md)。
+[Ljzn/chain-nifs](https://github.com/Ljzn/chain-nifs) 是公开的独立仓库，默认分支为 `develop`，维护三种 NIF 原型、源码构建入口、Alpine 预编译产物与互操作验证材料。
 
 Parano1d、TensorCash、Blocknet 的独立 Elixir/Rustler 原型合集。三个项目保留完整 Git 历史、各自工具链、lockfile、原生构建和官方互操作验证。它们不是 Mix umbrella，也没有合并 Cargo workspace 或依赖锁。
 
-个人源仓库 [Ljzn/chain-nifs](https://github.com/Ljzn/chain-nifs) 的 develop 历史保留，不改写。三个原仓库保留历史发布记录。[HANDOFF.md](HANDOFF.md) 和个人源仓库的 [Linux CI](https://github.com/Ljzn/chain-nifs/actions/workflows/ci.yml) 属于历史验收证据；组织仓库的运行结果须对应组织提交 SHA 单独核实。
+三个原仓库保留历史发布记录。[HANDOFF.md](HANDOFF.md) 记录已有验证证据；当前 [Linux CI](https://github.com/Ljzn/chain-nifs/actions/workflows/ci.yml) 结果应按本仓库的精确提交 SHA 核实。
 
 ## 项目导航
 
@@ -16,21 +16,21 @@ Parano1d、TensorCash、Blocknet 的独立 Elixir/Rustler 原型合集。三个�
 
 每个子项目的原有 review、性能和 CI 记录属于对应原仓库提交的历史证据，不能当作本 monorepo 的验收结果。根目录入口优先使用下方命令；子目录直接运行的缓存行为以其自身说明为准。
 
-## Venezia Alpine 预编译模式
+## Alpine 预编译模式
 
 使用仓库中的 musl 产物时，在 Alpine 3.21 / OTP 27 构建环境设置 CHAIN_NIFS_MODE=precompiled，即可编译 Elixir 包装层并打包 release，无需 Rust/Cargo/CMake/Go。支持 amd64 和 arm64，自动检查平台、OTP、manifest 与 SHA-256；缺失或不匹配时明确失败。默认仍从源码编译。使用方式、模式切换、构建来源和容器验证见 [PRECOMPILED.md](PRECOMPILED.md)。
 
 ## 克隆与准备
 
 ~~~sh
-git clone --branch chain-nifs --recurse-submodules git@github.com:peatio/ParkingLot.git
-cd ParkingLot
+git clone --branch develop --recurse-submodules https://github.com/Ljzn/chain-nifs.git
+cd chain-nifs
 # 普通 clone 或更新后的 checkout 可补取固定依赖：
 git submodule update --init --recursive
 bin/setup all
 ~~~
 
-需要 Git、Rustup、OTP/Elixir、Python 3、Go、Node.js/npm、C/C++ 编译器及 CMake。当前 CI 固定 Ubuntu 24.04、OTP 27.3.4.19、Elixir 1.20.5、Rust 1.96.0；TensorCash 使用 Node 22，Blocknet Go oracle 使用 GOTOOLCHAIN=go1.24.12+auto。首次准备或更新依赖/审计数据库需要网络。
+需要 Git、Rustup、OTP/Elixir、Python 3、Go、Node.js/npm、C/C++ 编译器及 CMake。当前 CI 使用 GitHub hosted Ubuntu 24.04，固定 OTP 27.3.4.19、Elixir 1.20.5、Rust 1.96.0；TensorCash 使用 Node 22，Blocknet Go oracle 使用 GOTOOLCHAIN=go1.24.12+auto。首次准备或更新依赖/审计数据库需要网络。
 
 两个公开官方源码 submodule 固定在 [MIGRATION.md](MIGRATION.md) 记录的版本；顶层 Git 必须递归初始化它们。不要用旧子项目目录各自的 .gitmodules 替代顶层 submodule 映射。
 
@@ -67,7 +67,7 @@ bin/audit all
 
 审计入口不把缺工具、数据库访问失败或命令失败当作零漏洞。clear_on_drop 未维护等已知信息性告警必须保留；各项目历史记录中的零已知漏洞不等于无告警，也不等于当前数据库已经复验。
 
-## CI 与迁移证据
+## CI 与历史证据
 
 [Linux matrix workflow](.github/workflows/ci.yml) 分别为三个项目执行 setup、check、audit，fail-fast=false，每行最多 45 分钟，递归 checkout 官方 submodule。每个项目有独立的验证 artifact，并保留子项目及根目录生成证据。配置存在不代表远程运行成功；实际结果应关联精确 monorepo SHA。
 
