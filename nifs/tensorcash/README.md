@@ -24,6 +24,8 @@
 
 作为 Mix Git 依赖时不需要 `submodules: true`，也支持 `sparse: "nifs/tensorcash"`。默认 `CHAIN_NIFS_MODE=source` 在 Rustler 启动之前，只准备本项目锁定提交的 liboqs 子模块；不拉取 Parano1d，不跟随远端分支，不覆盖本地修改。已有正确、干净源码时可以离线复用；没有 Git 元数据的源码包必须自带完整 vendor 源码。`CHAIN_NIFS_MODE=precompiled` 只校验并使用已提交的产物，完全不初始化源码子模块，也不自动回退到源码模式。
 
+Linux/musl 运行镜像必须提供 `/usr/bin/sha256sum`（Alpine 自带）。预编译 NIF 在加载前重新校验 SHA-256；在 embedded 启动期间，该校验不依赖 OTP `:crypto`。校验命令不可用、执行失败或摘要不符均拒绝加载。
+
 使用项目本地缓存，默认编译static PIC/reference ML-DSA-65并禁用OpenSSL。下面是通过 `bin/run` 使用固定版本检查、包括直接调用 Cargo 的独立开发流程，因此显式初始化子模块；普通 `mix compile` 会自动完成该准备步骤：
 
 ```sh
