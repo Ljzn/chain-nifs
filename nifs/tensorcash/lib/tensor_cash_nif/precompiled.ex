@@ -32,7 +32,7 @@ defmodule TensorCashNif.Precompiled do
   # Recheck the deployed environment and bytes before loading, without env variables.
   def load_data do
     target = host_target!()
-    verify!(Application.app_dir(@app), target, target, System.otp_release())
+    verify!(Application.app_dir(@app), target, target, System.otp_release(), &runtime_sha256!/1)
     0
   end
 
@@ -72,6 +72,10 @@ defmodule TensorCashNif.Precompiled do
 
   # Explicit host inputs keep validation testable without mutating process-wide env.
   def verify!(root, target, host_target, otp_major) do
+    verify!(root, target, host_target, otp_major, &compile_sha256!/1)
+  end
+
+  defp verify!(root, target, host_target, otp_major, sha256!) do
     unless target in @targets do
       fail!(
         "unsupported CHAIN_NIFS_TARGET #{inspect(target)}; expected #{Enum.join(@targets, " or ")}"
@@ -100,12 +104,35 @@ defmodule TensorCashNif.Precompiled do
         do: fail!("manifest #{key} must be #{inspect(value)}")
     end)
 
-    actual_sha = :crypto.hash(:sha256, read!(artifact_path)) |> Base.encode16(case: :lower)
+    actual_sha = sha256!.(artifact_path)
 
     if Map.get(manifest, "sha256") != actual_sha,
       do: fail!("SHA-256 mismatch for #{artifact_path}")
 
     [manifest_path, artifact_path]
+  end
+
+  defp compile_sha256!(path) do
+    :crypto.hash(:sha256, read!(path)) |> Base.encode16(case: :lower)
+  end
+
+  # Rustler's on_load can run before OTP has loaded :crypto in embedded releases.
+  defp runtime_sha256!(path) do
+    case System.cmd("/usr/bin/sha256sum", ["--", path], stderr_to_stdout: true) do
+      {<<digest::binary-size(64), " ", _::binary>>, 0} ->
+        case Base.decode16(digest, case: :lower) do
+          {:ok, <<_::256>>} -> digest
+          :error -> fail!("invalid SHA-256 output for #{path}")
+        end
+
+      {_, 0} ->
+        fail!("invalid SHA-256 output for #{path}")
+
+      {_, status} ->
+        fail!("sha256sum failed for #{path} (exit #{status})")
+    end
+  rescue
+    error in ErlangError -> fail!("cannot execute /usr/bin/sha256sum: #{inspect(error.original)}")
   end
 
   defp read!(path) do
